@@ -1,0 +1,37 @@
+{
+  "name": "my-new-project",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "clean": "expo start --clear"
+  },
+  "keywords": [
+    "expo",
+    "template",
+    "react-native",
+    "expo-router",
+    "audio"
+  ],
+  "author": "sergeygoreliy3",
+  "license": "MIT",
+  "dependencies": {
+    "expo": "~52.0.40",
+    "expo-status-bar": "~2.2.3",
+    "react": "18.3.1",
+    "react-native": "0.76.2",
+    "expo-router": "~4.0.21",
+    "expo-modules-core": "~2.2.3",
+    "react-native-safe-area-context": "4.12.0",
+    "react-native-screens": "~4.4.0",
+    "react-native-gesture-handler": "~2.20.2",
+    "expo-av": "~15.0.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0"
+  },
+  "private": true
+}
