@@ -1,6 +1,6 @@
 import { View, Text } from 'react-native';
 
-const About = () => {
+const Station = () => {
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <Text>страница про нас </Text>
@@ -8,4 +8,4 @@ const About = () => {
     );
 }
 
-export default About;
+export default Station;
