@@ -1,14 +1,18 @@
 import {Audio} from "expo-av";
 
-export const createSong = async (sound, setSound, radioWave) => {
+export const createSong = async (sound, setSound, radioWave, setIsLoading) => {
     try {
+        setIsLoading(true);
         if (sound) {
             await sound.unloadAsync();
         }
-        const {sound: song} = await Audio.Sound.createAsync(
+        const {sound: song,} = await Audio.Sound.createAsync(
             {uri: radioWave},
-        )
+        );
+        console.log('song', song);
         setSound(song);
+        setIsLoading(false);
+
     } catch (e) {
         console.error(e)
         setSound(null);
@@ -16,16 +20,16 @@ export const createSong = async (sound, setSound, radioWave) => {
     }
 }
 
-export const playOrPauseSong = async (isPlay, sound) => {
-    const {isLoaded} = await sound.getStatusAsync();
-    console.log(isLoaded)
-    try {
-            if (isLoaded) {
-                await sound.playAsync();
-            }
-    } catch (e) {
-        console.error(e);
-        alert('не удалось воспроизвести файл');
-    }
-}
+// export const playOrPauseSong = async (isPlay, sound) => {
+//     try {
+//         if (isPlay) {
+//             await sound.playAsync();
+//         } else {
+//             await sound.pauseAsync();
+//         }
+//     } catch (e) {
+//         console.error(e);
+//         alert('не удалось воспроизвести файл');
+//     }
+// }
 

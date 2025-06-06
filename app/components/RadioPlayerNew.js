@@ -1,8 +1,10 @@
 import {StyleSheet, TouchableOpacity, View, Text} from "react-native";
-import {useState, useEffect, useRef, useCallback} from "react";
+import {useState, useEffect, useRef, useCallback, useMemo} from "react";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import {createSong, playOrPauseSong} from "../../utils/controlPanelBtnNew";
+import ControlBtnAnimated from "./ControlBtnAnimated";
+import {Image} from "expo-image";
 
 
 const ButtonControl = ({
@@ -24,38 +26,63 @@ const ButtonControl = ({
 }
 
 
-const RadioPlayerNew = ({selectCategory = 'Rock', listStation = []}) => {
+const RadioPlayerNew = ({selectCategory = 'Rock', listStation = null}) => {
     const [radioStationWillBePlay, setRadioStationWillBePlay] = useState(null);
     const [curNumRadioStationList, setCurNumRadioStationList] = useState(0);
     const [isPlay, setIsPlay] = useState(false);
     const [sound, setSound] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    console.log(listStation)
+    const playOrPauseSong = useMemo(() => async (isPlay, sound) => {
+        try {
+            if (!sound) return;
+
+            if (isPlay) {
+                await sound.playAsync();
+            } else {
+                await sound.pauseAsync();
+            }
+        } catch (e) {
+            console.error(e);
+            alert('не удалось воспроизвести файл');
+        }
+    }, [sound, isPlay]);
+
+
 
     //загрузка радиостанции которая должна буде играть
-    useEffect(() => {
-        if (listStation.length > 0) {
-            setRadioStationWillBePlay(listStation[curNumRadioStationList]);
-        }
-    }, [listStation]);
+    // useEffect(() => {
+    //     if (listStation.length > 0) {
+    //         setRadioStationWillBePlay(listStation[curNumRadioStationList]);
+    //     }
+    // }, [listStation, curNumRadioStationList]);
     //создает из ссылки проигрыватель, но не запускает его по умолчанию
     useEffect(() => {
-        if (radioStationWillBePlay) {
-            createSong(sound, setSound, radioStationWillBePlay["url_resolved"])
-                .catch(e => console.error(e))
-        }
-    }, [radioStationWillBePlay]);
+        if (!listStation) return;
+
+        createSong(sound, setSound, listStation["url_resolved"], setIsLoading)
+            .catch(e => console.error(e));
+
+    }, [listStation]);
 
     //запуск плеера
     useEffect(() => {
-        if (sound) {
-            console.log('test sound')
+        if (sound){
+            console.log(sound)
             playOrPauseSong(isPlay, sound)
-                .catch(e => console.error(e))
+                .catch(e => console.error(e));
         }
+    }, [isPlay, sound]);
 
-    }, [isPlay, sound])
+    //сброс размонтирование соунда при размонтировании компонента ('при выходе из квартиры выключи свет')
+    useEffect(() => {
+
+        return () => {
+            if (sound) {
+                sound.unloadAsync();
+            }
+        }
+    }, [sound]);
 
 
 
@@ -76,37 +103,53 @@ const RadioPlayerNew = ({selectCategory = 'Rock', listStation = []}) => {
 
 
 
+
     return (
         <View style={styling.container}>
+
             <View style={styling.controlPanel}>
-                <ButtonControl
-                    managementFN={preStation}
-                    styleBtn={styling.btn()}
-                    styleLabel={styling.btnLabel}
-                >
-                    <AntDesign name="stepbackward" size={44} color="black" />
-                </ButtonControl>
-                <ButtonControl
-                    managementFN={togglePlay}
-                    styleBtn={styling.btn(true)}
-                    styleLabel={styling.btnLabel}
-                >
-                    {isPlay ? <FontAwesome5 name="pause" size={44} color="black" /> :<AntDesign name="play" size={44} color="black" />}
-                </ButtonControl>
-                <ButtonControl
-                    managementFN={nextStation}
-                    styleBtn={styling.btn(true)}
-                    styleLabel={styling.btnLabel}
-                >
-                    <AntDesign name="stepforward" size={44} color="black" />
-                </ButtonControl>
-                <ButtonControl
-                    managementFN={resetStation}
-                    styleBtn={styling.btn(true)}
-                    styleLabel={styling.btnLabel}
-                >
-                    <FontAwesome5 name="stop" size={44} color="black" />
-                </ButtonControl>
+                <View>
+                    <Image
+                        source={{uri: listStation?.favicon}}
+                        style={{
+                            width: 100,
+                            height: 40,
+                            borderRadius: 10,
+                            resizeMode: 'contain',
+
+                    }}
+                    />
+                </View>
+                <View style={styling.btnWrapper}>
+                    <ButtonControl
+                        managementFN={preStation}
+                        styleBtn={styling.btn()}
+                        styleLabel={styling.btnLabel}
+                    >
+                        <AntDesign name="stepbackward" size={24} color="white" />
+                    </ButtonControl>
+                    <ButtonControl
+                        managementFN={togglePlay}
+                        styleBtn={styling.btn(true)}
+                        styleLabel={styling.btnLabel}
+                    >
+                        <ControlBtnAnimated isPlay={isPlay} isLoading={isLoading}/>
+                    </ButtonControl>
+                    <ButtonControl
+                        managementFN={nextStation}
+                        styleBtn={styling.btn(true)}
+                        styleLabel={styling.btnLabel}
+                    >
+                        <AntDesign name="stepforward" size={24} color="white" />
+                    </ButtonControl>
+                    <ButtonControl
+                        managementFN={resetStation}
+                        styleBtn={styling.btn(true)}
+                        styleLabel={styling.btnLabel}
+                    >
+                        <FontAwesome5 name="stop" size={24} color="white" />
+                    </ButtonControl>
+                </View>
             </View>
         </View>
     )
@@ -127,13 +170,25 @@ const styling = StyleSheet.create({
     controlPanel: {
         flexDirection: 'row',
         position: "absolute",
-        bottom: 50,
+        bottom: 0,
         left: '50%',
-        width: 250,
-        justifyContent: "center",
+        paddingHorizontal: 10,
+        width: '100%',
+        height: 50,
+        borderRadius: 12,
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        justifyContent: "space-between",
+        alignItems: 'center',
+        borderColor: '#FF4D00FF',
+        borderWidth: 1,
         transform: [{
             translateX: '-50%',
-        }]
+        }],
+
+    },
+    btnWrapper: {
+        flexDirection: 'row',
+
     },
     btn: (mr = false) => ({
         marginLeft: mr ? 25 : 0,
