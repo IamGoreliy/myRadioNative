@@ -26,55 +26,38 @@ const ButtonControl = ({
 }
 
 
-const RadioPlayerNew = ({selectCategory = 'Rock', listStation = null}) => {
-    const [radioStationWillBePlay, setRadioStationWillBePlay] = useState(null);
-    const [curNumRadioStationList, setCurNumRadioStationList] = useState(0);
+const RadioPlayerNew = ({selectCategory = 'Rock', radioWave = null, handlerNextWave, handlerPreWave}) => {
     const [isPlay, setIsPlay] = useState(false);
     const [sound, setSound] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-
-    const playOrPauseSong = useMemo(() => async (isPlay, sound) => {
-        try {
-            if (!sound) return;
-
-            if (isPlay) {
-                await sound.playAsync();
-            } else {
-                await sound.pauseAsync();
-            }
-        } catch (e) {
-            console.error(e);
-            alert('не удалось воспроизвести файл');
-        }
-    }, [sound, isPlay]);
+    const [waveUrl, setWaveUrl] = useState(null);
 
 
-
-    //загрузка радиостанции которая должна буде играть
-    // useEffect(() => {
-    //     if (listStation.length > 0) {
-    //         setRadioStationWillBePlay(listStation[curNumRadioStationList]);
-    //     }
-    // }, [listStation, curNumRadioStationList]);
-    //создает из ссылки проигрыватель, но не запускает его по умолчанию
     useEffect(() => {
-        if (!listStation) return;
+        if (radioWave) {
+            setWaveUrl(radioWave["url_resolved"]);
+        }
+    }, [radioWave]);
 
-        createSong(sound, setSound, listStation["url_resolved"], setIsLoading)
+    //создает из ссылки проигрыватель и как только волна будет загружена начнется воспроизведение
+    useEffect(() => {
+        if (!waveUrl) {
+            return;
+        }
+        createSong(sound, setSound, waveUrl, setIsLoading, setIsPlay)
             .catch(e => console.error(e));
 
-    }, [listStation]);
+    }, [waveUrl]);
 
-    //запуск плеера
+    // запуск плеера
     useEffect(() => {
         if (sound){
-            console.log(sound)
             playOrPauseSong(isPlay, sound)
                 .catch(e => console.error(e));
         }
     }, [isPlay, sound]);
 
-    //сброс размонтирование соунда при размонтировании компонента ('при выходе из квартиры выключи свет')
+    // сброс размонтирование соунда при размонтировании компонента ('при выходе из квартиры выключи свет')
     useEffect(() => {
 
         return () => {
@@ -84,23 +67,15 @@ const RadioPlayerNew = ({selectCategory = 'Rock', listStation = null}) => {
         }
     }, [sound]);
 
-
-
-    const togglePlay = useCallback(() => setIsPlay(!isPlay), [isPlay]);
-    const nextStation = useCallback(() => {
-        setCurNumRadioStationList(prevState => {
-            return prevState <= listStation.length ? prevState + 1 : prevState;
-        })
-    }, []);
-    const preStation = useCallback(() => {
-        setCurNumRadioStationList(prevState => {
-            return prevState > 0 ? prevState - 1 : prevState;
-        })
-    }, []);
-    const resetStation = useCallback(() => {
-        setCurNumRadioStationList(0);
+    const togglePlay = useCallback(() => {
+        setIsPlay(prevState => !prevState);
     }, []);
 
+    const resetBtn = useCallback(() => {
+        sound?.unloadAsync();
+        setIsPlay(false);
+        setSound(null);
+    }, [])
 
 
 
@@ -110,7 +85,7 @@ const RadioPlayerNew = ({selectCategory = 'Rock', listStation = null}) => {
             <View style={styling.controlPanel}>
                 <View>
                     <Image
-                        source={{uri: listStation?.favicon}}
+                        source={{uri: radioWave?.favicon}}
                         style={{
                             width: 100,
                             height: 40,
@@ -122,7 +97,7 @@ const RadioPlayerNew = ({selectCategory = 'Rock', listStation = null}) => {
                 </View>
                 <View style={styling.btnWrapper}>
                     <ButtonControl
-                        managementFN={preStation}
+                        managementFN={handlerPreWave}
                         styleBtn={styling.btn()}
                         styleLabel={styling.btnLabel}
                     >
@@ -136,14 +111,14 @@ const RadioPlayerNew = ({selectCategory = 'Rock', listStation = null}) => {
                         <ControlBtnAnimated isPlay={isPlay} isLoading={isLoading}/>
                     </ButtonControl>
                     <ButtonControl
-                        managementFN={nextStation}
+                        managementFN={handlerNextWave}
                         styleBtn={styling.btn(true)}
                         styleLabel={styling.btnLabel}
                     >
                         <AntDesign name="stepforward" size={24} color="white" />
                     </ButtonControl>
                     <ButtonControl
-                        managementFN={resetStation}
+                        managementFN={resetBtn}
                         styleBtn={styling.btn(true)}
                         styleLabel={styling.btnLabel}
                     >
