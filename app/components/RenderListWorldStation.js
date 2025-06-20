@@ -1,17 +1,24 @@
 import {FlatList, View, Text, StyleSheet, TouchableOpacity, TextInput} from "react-native";
 import {BlurView} from "expo-blur";
 import {useState, useEffect} from "react";
+import Animated from "react-native-reanimated";
 
-const RenderListWorldStation = ({list = [], handlerSelectCountry}) => {
+const RenderListWorldStation = ({list = [], handlerSelectCountry, fieldInput}) => {
     const [listForRender, setListForRender] = useState(list);
-    const [inputSearch, setInputSearch] = useState('');
+    // const [inputSearch, setInputSearch] = useState('');
 
     useEffect(() => {
-        if (inputSearch !== '') {
+        if (list.length) {
+            setListForRender(list);
+        }
+    }, [list]);
+
+    useEffect(() => {
+        if (fieldInput !== '') {
             let filterCountry;
             const rusKeyBoard = new RegExp('[а-яА-ЯЁё]');
             const engKeyBoard = new RegExp('[a-zA-Z]');
-            const editedInputSearch = inputSearch.trim().toLowerCase();
+            const editedInputSearch = fieldInput.trim().toLowerCase();
             const testKeyBoard = rusKeyBoard.test(editedInputSearch) ? 'rus' : engKeyBoard.test(editedInputSearch) ? 'eng' : 'unknow key board';
             if (testKeyBoard === 'rus') {
                  filterCountry = list.filter(country => country.nameRu.toLowerCase().includes(editedInputSearch));
@@ -22,19 +29,22 @@ const RenderListWorldStation = ({list = [], handlerSelectCountry}) => {
         } else {
             setListForRender(list);
         }
-    }, [inputSearch]);
+    }, [fieldInput]);
 
     return (
-        <View>
-            <View>
-                <TextInput
-                    onChangeText={(text) => setInputSearch(text)}
-                    value={inputSearch}
-                />
-            </View>
-            <FlatList
+        <View
+            style={styling.mainContainer}
+        >
+            {/*<View>*/}
+            {/*    <TextInput*/}
+            {/*        onChangeText={(text) => setInputSearch(text)}*/}
+            {/*        value={inputSearch}*/}
+            {/*    />*/}
+            {/*</View>*/}
+            <Animated.FlatList
                 data={listForRender}
                 contentContainerStyle={styling.containerFlag}
+                scrollEventThrottle={16}
                 renderItem={({item}) => {
                     return (
                         <BlurView intensity={90} tint={"light"} style={styling.flagBtn}>
@@ -61,6 +71,10 @@ const RenderListWorldStation = ({list = [], handlerSelectCountry}) => {
 }
 
 const styling = StyleSheet.create({
+    mainContainer: {
+        flex: 1,
+        paddingTop: 0,
+    },
     containerFlag: {
         backgroundColor: 'black',
         padding: 10,

@@ -1,32 +1,41 @@
 import {FlatList, StyleSheet, View, Text, TouchableOpacity, TextInput} from "react-native";
 import {useState, useEffect} from "react";
+import Animated from "react-native-reanimated";
 
-const RenderListCategory = ({list = [], handlerSelectCategory}) => {
+const RenderListCategory = ({list = [], handlerSelectCategory, fieldInput}) => {
     const [listForRender, setListForRender] = useState(list);
     const [inputSearch, setInputSearch] = useState('');
 
     useEffect(() => {
-        if (inputSearch !== '') {
+        if (list.length) {
+            setListForRender(list);
+        }
+    }, [list]);
+
+    useEffect(() => {
+        if (fieldInput !== '') {
             const filterList = list.filter(station => {
-                return station.name.toLowerCase().includes(inputSearch.toLowerCase());
+                return station.name.toLowerCase().includes(fieldInput.toLowerCase());6
             })
             setListForRender(filterList);
         } else {
             setListForRender(list);
         }
-    }, [inputSearch]);
+    }, [fieldInput]);
 
     return (
         <View style={styling.container}>
-            <View>
-                <TextInput
-                    onChangeText={(text) => setInputSearch(text)}
-                    value={inputSearch}
-                    placeholder={'поиск радиостанции по тегу'}
-                />
-            </View>
-            <FlatList
+            {/*<View style={styling.inputWrapper}>*/}
+            {/*    <TextInput*/}
+            {/*        onChangeText={(text) => setInputSearch(text)}*/}
+            {/*        value={inputSearch}*/}
+            {/*        placeholder={'поиск радиостанции по тегу...'}*/}
+            {/*        style={styling.inputField}*/}
+            {/*    />*/}
+            {/*</View>*/}
+            <Animated.FlatList
                 data={listForRender}
+                scrollEventThrottle={16}
                 renderItem={({item}) => {
                     return (
                         <TouchableOpacity
@@ -49,7 +58,14 @@ const RenderListCategory = ({list = [], handlerSelectCategory}) => {
 
 const styling = StyleSheet.create({
     container: {
-        height: '94%',
+        flex: 1,
+    },
+    inputWrapper: {
+
+    },
+    inputField: {
+        height: 35,
+
     },
     containerList: {
         padding: 10,

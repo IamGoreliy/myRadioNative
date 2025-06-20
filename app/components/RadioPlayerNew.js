@@ -2,7 +2,7 @@ import {StyleSheet, TouchableOpacity, View, Text} from "react-native";
 import {useState, useEffect, useRef, useCallback, useMemo} from "react";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import {createSong, playOrPauseSong} from "../../utils/controlPanelBtnNew";
+import {createSong} from "../../utils/controlPanelBtnNew";
 import ControlBtnAnimated from "./ControlBtnAnimated";
 import {Image} from "expo-image";
 
@@ -26,11 +26,12 @@ const ButtonControl = ({
 }
 
 
-const RadioPlayerNew = ({selectCategory = 'Rock', radioWave = null, handlerNextWave, handlerPreWave}) => {
+const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => {
     const [isPlay, setIsPlay] = useState(false);
     const [sound, setSound] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [waveUrl, setWaveUrl] = useState(null);
+
 
 
     useEffect(() => {
@@ -44,18 +45,16 @@ const RadioPlayerNew = ({selectCategory = 'Rock', radioWave = null, handlerNextW
         if (!waveUrl) {
             return;
         }
-        createSong(sound, setSound, waveUrl, setIsLoading, setIsPlay)
-            .catch(e => console.error(e));
-
-    }, [waveUrl]);
-
-    // запуск плеера
-    useEffect(() => {
-        if (sound){
-            playOrPauseSong(isPlay, sound)
+        if (isPlay) {
+            createSong(sound, setSound, waveUrl, setIsLoading, setIsPlay)
                 .catch(e => console.error(e));
+        } else {
+            if(sound) {
+                sound.unloadAsync();
+            }
+            setSound(null);
         }
-    }, [isPlay, sound]);
+    }, [waveUrl, isPlay]);
 
     // сброс размонтирование соунда при размонтировании компонента ('при выходе из квартиры выключи свет')
     useEffect(() => {
@@ -117,13 +116,13 @@ const RadioPlayerNew = ({selectCategory = 'Rock', radioWave = null, handlerNextW
                     >
                         <AntDesign name="stepforward" size={24} color="white" />
                     </ButtonControl>
-                    <ButtonControl
-                        managementFN={resetBtn}
-                        styleBtn={styling.btn(true)}
-                        styleLabel={styling.btnLabel}
-                    >
-                        <FontAwesome5 name="stop" size={24} color="white" />
-                    </ButtonControl>
+                    {/*<ButtonControl*/}
+                    {/*    managementFN={resetBtn}*/}
+                    {/*    styleBtn={styling.btn(true)}*/}
+                    {/*    styleLabel={styling.btnLabel}*/}
+                    {/*>*/}
+                    {/*    <FontAwesome5 name="stop" size={24} color="white" />*/}
+                    {/*</ButtonControl>*/}
                 </View>
             </View>
         </View>

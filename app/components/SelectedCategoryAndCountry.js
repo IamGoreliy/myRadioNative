@@ -10,7 +10,7 @@ const SelectedCategoryAndCountry = ({country, category, switchBetweenLists}) => 
                 style={styling.btnWrapper}
             >
                 <Text style={{color: 'red'}}>
-                    {country !== null ? `${country.flag} ${country?.name}` : 'страна не выбрана'}
+                    {country.name !== '' && country.flag !== '' ? `${country?.flag} ${country?.name}` : 'страна не выбрана'}
                 </Text>
             </TouchableOpacity>
             <TouchableOpacity
