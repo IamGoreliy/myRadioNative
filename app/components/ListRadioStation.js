@@ -3,28 +3,37 @@ import {Image} from "expo-image";
 import {LinearGradient} from "expo-linear-gradient";
 import {useCallback, useState, useEffect, memo} from "react";
 import Animated from "react-native-reanimated";
+import {handlerGoHomePage} from "../../utils/fetch/handlerGoHomePage";
 
 const logoPlaceholder = require('../../assets/logoByGemini.webp');
 
 const StationItem = memo(({handler, item, index, isSelect}) => {
     return (
-        <TouchableOpacity
-            onPress={() => handler(index)}
-            style={[
-                styling.wrapperStation,
-                isSelect && styling.wrapperStationBorderColorSelect
-            ]}
+        <View
+            style={styling.mainItem}
         >
-            <Image
-                style={styling.logoStation}
-                source={item.favicon ? {uri: item.favicon} : logoPlaceholder}
-            />
-            <Text
-                style={styling.nameStation}
+            <TouchableOpacity
+                onPress={() => handler(index)}
+                style={[
+                    styling.wrapperStation,
+                    isSelect && styling.wrapperStationBorderColorSelect
+                ]}
             >
-                {item.name}
-            </Text>
-        </TouchableOpacity>
+                <View
+                    style={styling.infoBtn}
+                >
+                    <Image
+                        style={styling.logoStation}
+                        source={item.favicon ? {uri: item.favicon} : logoPlaceholder}
+                    />
+                    <Text
+                        style={styling.nameStation}
+                    >
+                        {item.name}
+                    </Text>
+                </View>
+            </TouchableOpacity>
+        </View>
     )
 })
 
@@ -85,10 +94,15 @@ const styling = StyleSheet.create({
         marginHorizontal: '2%',
         paddingBottom: 54,
     },
+    mainItem: {
+        justifyContent: "center",
+        alignItems: "center"
+    },
     wrapperStation: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 5,
+        justifyContent: 'space-between',
+        paddingHorizontal: 15,
         width: '100%',
         height: 40,
         marginTop: 4,
@@ -100,6 +114,37 @@ const styling = StyleSheet.create({
     wrapperStationBorderColorSelect: {
         borderColor: '#ff00f4',
         borderWidth: 2,
+    },
+    infoBtn: {
+        flexDirection: "row"
+    },
+    descriptionWrapper: {
+        flexDirection: "row",
+        alignItems: 'center',
+        padding: 5,
+        width: '96%',
+        backgroundColor: 'red',
+        borderLeftWidth: 2,
+        borderRightWidth: 2,
+        borderBottomWidth: 2,
+        borderLeftColor: 'white',
+        borderRightColor: 'white',
+        borderBottomColor: 'white',
+        borderBottomLeftRadius: 10,
+        borderBottomRightRadius: 10,
+    },
+    descriptionTextAndLink: {
+        marginLeft: 20,
+    },
+    descNameStation: {
+        fontWeight: 700,
+    },
+    btnGoHomePage: {
+        padding: 2,
+        borderWidth: 1,
+        borderColor: 'white',
+        borderRadius: 4,
+        backgroundColor: 'white',
     },
     logoStation: {
         width: 40,

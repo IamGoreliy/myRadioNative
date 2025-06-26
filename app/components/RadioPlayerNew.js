@@ -1,10 +1,14 @@
 import {StyleSheet, TouchableOpacity, View, Text} from "react-native";
 import {useState, useEffect, useRef, useCallback, useMemo} from "react";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import Foundation from '@expo/vector-icons/Foundation';
 import {createSong} from "../../utils/controlPanelBtnNew";
 import ControlBtnAnimated from "./ControlBtnAnimated";
 import {Image} from "expo-image";
+import {startListening, stopListening} from '../../services/TrackMetadataService';
+
+const logoPlaceholder = require('../../assets/logoByGemini.webp');
+
 
 
 const ButtonControl = ({
@@ -31,12 +35,16 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
     const [sound, setSound] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [waveUrl, setWaveUrl] = useState(null);
+    const [controlPanelExpand, setControlPanelExpand] = useState(false);
+    const [trackTitle, setTrackTitle] = useState('Название трека...');
+
 
 
 
     useEffect(() => {
         if (radioWave) {
             setWaveUrl(radioWave["url_resolved"]);
+            setTrackTitle('Загрузка названия...')
         }
     }, [radioWave]);
 
@@ -48,12 +56,23 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
         if (isPlay) {
             createSong(sound, setSound, waveUrl, setIsLoading, setIsPlay)
                 .catch(e => console.error(e));
+
+            startListening(waveUrl, (newTitle) => {
+                setTrackTitle(newTitle);
+            });
         } else {
             if(sound) {
                 sound.unloadAsync();
             }
             setSound(null);
+            stopListening();
+            setTrackTitle('Название трека...')
         }
+
+        return () => {
+            stopListening();
+        }
+
     }, [waveUrl, isPlay]);
 
     // сброс размонтирование соунда при размонтировании компонента ('при выходе из квартиры выключи свет')
@@ -70,60 +89,95 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
         setIsPlay(prevState => !prevState);
     }, []);
 
-    const resetBtn = useCallback(() => {
-        sound?.unloadAsync();
-        setIsPlay(false);
-        setSound(null);
+    const handlerExpand = useCallback(() => {
+        setControlPanelExpand(prevState => !prevState);
     }, [])
 
 
 
     return (
         <View style={styling.container}>
-
-            <View style={styling.controlPanel}>
-                <View>
+            <View
+                style={[
+                    styling.controlPanel,
+                    controlPanelExpand && styling.controlPanelIsOpen,
+                ]}
+            >
+                <View
+                    style={[
+                        styling.wrapperInfoRadioStation,
+                        controlPanelExpand && styling.wrapperInfoRadioStationOnOpen,
+                    ]}
+                >
                     <Image
-                        source={{uri: radioWave?.favicon}}
-                        style={{
-                            width: 100,
-                            height: 40,
-                            borderRadius: 10,
-                            resizeMode: 'contain',
-
-                    }}
+                        source={radioWave?.favicon ? {uri: radioWave.favicon} : logoPlaceholder}
+                        style={[
+                            styling.logoRadio,
+                            controlPanelExpand && styling.logoRadioIsOpen,
+                        ]}
                     />
+                    {controlPanelExpand &&
+                        <Text style={styling.nameRadioStation}>
+                            {radioWave.name}
+                        </Text>
+                    }
+                    <Text
+                        style={[
+                            styling.trackTitle,
+                            controlPanelExpand && styling.trackTitleOpen,
+                        ]}
+                        // numberOfLines={1}
+                    >
+                        {trackTitle}
+                    </Text>
                 </View>
-                <View style={styling.btnWrapper}>
+                <View
+                    style={[
+                        styling.btnWrapper,
+                        controlPanelExpand && styling.btnWrapperOpen,
+                    ]}
+                >
                     <ButtonControl
                         managementFN={handlerPreWave}
                         styleBtn={styling.btn()}
                         styleLabel={styling.btnLabel}
                     >
-                        <AntDesign name="stepbackward" size={24} color="white" />
+                        <AntDesign name="stepbackward" size={controlPanelExpand ? 44 : 24} color="white" />
                     </ButtonControl>
                     <ButtonControl
                         managementFN={togglePlay}
                         styleBtn={styling.btn(true)}
                         styleLabel={styling.btnLabel}
                     >
-                        <ControlBtnAnimated isPlay={isPlay} isLoading={isLoading}/>
+                        <ControlBtnAnimated isPlay={isPlay} isLoading={isLoading} isBig={controlPanelExpand}/>
                     </ButtonControl>
                     <ButtonControl
                         managementFN={handlerNextWave}
                         styleBtn={styling.btn(true)}
                         styleLabel={styling.btnLabel}
                     >
-                        <AntDesign name="stepforward" size={24} color="white" />
+                        <AntDesign name="stepforward" size={controlPanelExpand ? 44 : 24} color="white" />
                     </ButtonControl>
-                    {/*<ButtonControl*/}
-                    {/*    managementFN={resetBtn}*/}
-                    {/*    styleBtn={styling.btn(true)}*/}
-                    {/*    styleLabel={styling.btnLabel}*/}
-                    {/*>*/}
-                    {/*    <FontAwesome5 name="stop" size={24} color="white" />*/}
-                    {/*</ButtonControl>*/}
+                    {!controlPanelExpand &&
+                        <ButtonControl
+                            managementFN={handlerExpand}
+                            styleBtn={styling.btnExpand}
+                            styleLabel={[
+                                styling.btnLabel,
+                            ]}
+                         >
+                            <Foundation name="arrows-expand" size={24} color="white" />
+                        </ButtonControl>
+                    }
                 </View>
+                {controlPanelExpand &&
+                    <ButtonControl
+                        managementFN={handlerExpand}
+                        styleBtn={styling.btnExpandOpen}
+                        styleLabel={styling.btnLabel}>
+                            <Foundation name="arrows-compress" size={24} color="white" />
+                    </ButtonControl>
+                }
             </View>
         </View>
     )
@@ -138,9 +192,7 @@ const styling = StyleSheet.create({
         fontSize: 44,
         textAlign: 'center',
     },
-    logoStation: {
-
-    },
+    //панель с кнопками закрыта
     controlPanel: {
         flexDirection: 'row',
         position: "absolute",
@@ -158,19 +210,81 @@ const styling = StyleSheet.create({
         transform: [{
             translateX: '-50%',
         }],
+    },
+    //панель с копками открыта
+    controlPanelIsOpen: {
+        padding: 20,
+        height: 600,
+        flexDirection: "column",
+        justifyContent: 'unset',
+
+    },
+    //обертка информации про радиостанцию в обычном состоянии
+    wrapperInfoRadioStation: {
+        flexDirection: 'row',
+    },
+    //обертка информация про радиостанцию когда панель развернута
+    wrapperInfoRadioStationOnOpen: {
+        flexDirection: "column",
+        alignItems: "center"
+    },
+    //лого радиостанции
+    logoRadio: {
+        width: 100,
+        height: 40,
+        resizeMode: 'contain',
+    },
+    logoRadioIsOpen: {
+        width: 200,
+        height: 200,
+        resizeMode: 'contain'
+    },
+    nameRadioStation: {
+        fontWeight: 700,
+        fontSize: 24,
+        color: 'white',
+    },
+    trackTitle: {
+        marginLeft: 10,
+        color: 'white',
+        width: 100,
+    },
+    trackTitleOpen: {
+        display: "flex",
+        flexDirection: "row",
+        flexWrap: "wrap",
+        marginLeft: 0,
+        marginTop: 20,
+        fontWeight: 700,
+        fontSize: 20,
+        width: 300,
+        backgroundColor: 'red'
 
     },
     btnWrapper: {
         flexDirection: 'row',
+    },
+    btnWrapperOpen: {
+        position: "absolute",
+        bottom: 20,
 
     },
     btn: (mr = false) => ({
         marginLeft: mr ? 25 : 0,
-
-
     }),
+    btnExpand:{
+        marginLeft: 25,
+    },
+    btnExpandOpen: {
+        position: "absolute",
+        top: 20,
+        right: 20,
+    },
     btnLabel: {
 
+    },
+    btnLabelOpen: {
+        fontSize: 44
     },
 })
 

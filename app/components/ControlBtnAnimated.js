@@ -2,7 +2,7 @@ import {Animated, Easing} from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import {useRef, useEffect} from "react";
 
-const ControlBtnAnimated = ({isPlay, isLoading}) => {
+const ControlBtnAnimated = ({isPlay, isLoading, isBig}) => {
     const spinValue = useRef(new Animated.Value(0)).current;
 
     const spinOption = spinValue.interpolate({
@@ -31,12 +31,12 @@ const ControlBtnAnimated = ({isPlay, isLoading}) => {
     return (
         <>
             {!isPlay
-                ? <AntDesign name="play" size={24} color="white" />
+                ? <AntDesign name="play" size={isBig ? 44 : 24} color="white" />
                 : isLoading
                     ? <Animated.View style={{transform: [{rotate: spinOption}]}}>
-                        <AntDesign name="loading2" size={24} color="white" />
+                        <AntDesign name="loading2" size={isBig ? 44: 24} color="white" />
                       </Animated.View>
-                    : <AntDesign name="pause" size={24} color="white" />
+                    : <AntDesign name="pause" size={isBig ? 44 : 24} color="white" />
             }
         </>
     )
