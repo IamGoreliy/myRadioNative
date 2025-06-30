@@ -1,5 +1,5 @@
 import {View, Text, StyleSheet, ImageBackground} from 'react-native';
-import {useState, useEffect, useCallback, useRef} from "react";
+import {useState, useEffect, useCallback, useRef, createContext} from "react";
 import {fetchGetStation} from "../../utils/fetch/fetchGetStation";
 import RadioPlayerNew from "../components/RadioPlayerNew";
 import ListRadioStation from "../components/ListRadioStation";
@@ -27,9 +27,6 @@ const Home = () => {
     const lastScrollY = useSharedValue(0);
     const headerTranslateY = useSharedValue(0);
     const isHeaderVisible = useSharedValue(1);
-
-
-
 
 
 

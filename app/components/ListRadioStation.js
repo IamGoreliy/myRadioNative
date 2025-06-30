@@ -1,13 +1,13 @@
 import {FlatList, View, Text, StyleSheet, TouchableOpacity} from "react-native";
 import {Image} from "expo-image";
-import {LinearGradient} from "expo-linear-gradient";
 import {useCallback, useState, useEffect, memo} from "react";
 import Animated from "react-native-reanimated";
-import {handlerGoHomePage} from "../../utils/fetch/handlerGoHomePage";
+import AntDesign from '@expo/vector-icons/AntDesign';
+import {useUserDataContext} from "../../utils/UserDataSaveContext";
 
 const logoPlaceholder = require('../../assets/logoByGemini.webp');
 
-const StationItem = memo(({handler, item, index, isSelect}) => {
+export const StationItem = memo(({handler, item, index, isSelect, starsIsSelect, starsSave}) => {
     return (
         <View
             style={styling.mainItem}
@@ -20,17 +20,30 @@ const StationItem = memo(({handler, item, index, isSelect}) => {
                 ]}
             >
                 <View
-                    style={styling.infoBtn}
+                    style={styling.infoBtnWrapper}
                 >
-                    <Image
-                        style={styling.logoStation}
-                        source={item.favicon ? {uri: item.favicon} : logoPlaceholder}
-                    />
-                    <Text
-                        style={styling.nameStation}
+                    <View
+                        style={styling.infoBtn}
                     >
-                        {item.name}
-                    </Text>
+                        <Image
+                            style={styling.logoStation}
+                            source={item.favicon ? {uri: item.favicon} : logoPlaceholder}
+                        />
+                        <Text
+                            style={styling.nameStation}
+                        >
+                            {item.name}
+                        </Text>
+                    </View>
+                    <TouchableOpacity
+                        style={styling.btnStar}
+                        onPress={() => starsSave(item)}
+                    >
+                        { starsIsSelect
+                            ? <AntDesign name="star" size={24} color="yellow" />
+                            : <AntDesign name="staro" size={20} color="yellow" />
+                        }
+                    </TouchableOpacity>
                 </View>
             </TouchableOpacity>
         </View>
@@ -39,29 +52,53 @@ const StationItem = memo(({handler, item, index, isSelect}) => {
 
 const ListRadioStation = ({listStation, fnSelectedRadio, changeIndex, onScroll}) => {
     const [selectStationIndex, setSelectStationIndex] = useState(null);
+    const [stateSaveRadio, setStateSaveRadio] = useUserDataContext();
 
     useEffect(() => {
         if (changeIndex !== selectStationIndex) {
             setSelectStationIndex(changeIndex);
         }
-    }, [changeIndex])
+    }, [changeIndex]);
 
-    const  radioWave = useCallback((indexElement) => {
+    const radioWave = useCallback((indexElement) => {
         fnSelectedRadio(indexElement);
         setSelectStationIndex(indexElement);
     }, []);
 
+    const toggleFavorite = useCallback((radioWave) => {
+        setStateSaveRadio(prevState => {
+            const isFavorite = !prevState.saveStation.some(wave => wave.stationuuid === radioWave.stationuuid);
+            let newState;
+            if (isFavorite) {
+                newState = {
+                    ...prevState,
+                    saveStation: [...prevState.saveStation, radioWave],
+                };
+            } else {
+               newState = {
+                   ...prevState,
+                   saveStation: prevState.saveStation.filter(curRadioWave => curRadioWave.stationuuid !== radioWave.stationuuid),
+               };
+            }
+            return newState;
+        });
+    }, []);
+
     const renderListItem = useCallback(({item, index}) => {
         const isSelect = selectStationIndex === index;
+        const starSelected = !!stateSaveRadio.saveStation.find(wave => wave.stationuuid === item.stationuuid);
+
         return (
             <StationItem
                 handler={radioWave}
                 item={item}
                 index={index}
                 isSelect={isSelect}
+                starsIsSelect={starSelected}
+                starsSave={toggleFavorite}
             />
         )
-    }, [selectStationIndex]);
+    }, [selectStationIndex, stateSaveRadio.saveStation]);
 
     const getItemLayout = useCallback((_, index) => {
         return {
@@ -69,7 +106,7 @@ const ListRadioStation = ({listStation, fnSelectedRadio, changeIndex, onScroll})
             offset: 44 * index,
             index,
         }
-    }, [])
+    }, []);
 
     return (
         <Animated.FlatList
@@ -78,7 +115,7 @@ const ListRadioStation = ({listStation, fnSelectedRadio, changeIndex, onScroll})
             scrollEventThrottle={16}
             contentContainerStyle={styling.mapList}
             renderItem={renderListItem}
-            keyExtractor={(item, index) => index.toString()}
+            keyExtractor={(item) => item.stationuuid}
             extraData={selectStationIndex}
             getItemLayout={getItemLayout}
             initialNumToRender={10}
@@ -115,8 +152,14 @@ const styling = StyleSheet.create({
         borderColor: '#ff00f4',
         borderWidth: 2,
     },
+    infoBtnWrapper: {
+        width: '100%',
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center"
+    },
     infoBtn: {
-        flexDirection: "row"
+        flexDirection: "row",
     },
     descriptionWrapper: {
         flexDirection: "row",
@@ -152,6 +195,8 @@ const styling = StyleSheet.create({
     },
     nameStation: {
         color: 'white'
+    },
+    btnStar: {
     }
 })
 export default ListRadioStation;

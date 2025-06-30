@@ -118,7 +118,7 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
                     />
                     {controlPanelExpand &&
                         <Text style={styling.nameRadioStation}>
-                            {radioWave.name}
+                            {radioWave?.name ?? 'радиостанция не выбрана'}
                         </Text>
                     }
                     <Text

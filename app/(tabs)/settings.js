@@ -1,13 +1,15 @@
 import {View, Text, TouchableOpacity} from 'react-native';
-import {testGetNameTrack} from "../../utils/fetch/testGetNameTrack";
+import {checkStorageValue} from "../../utils/workingWithStorageDevice";
+import {useUserDataContext} from "../../utils/UserDataSaveContext";
 const Settings = () => {
+    const [userData, setUserData] = useUserDataContext();
     return (
         <View>
             <Text>Settings</Text>
             <TouchableOpacity
-                onPress={testGetNameTrack}
+                onPress={checkStorageValue}
             >
-                <Text>test fetch get name track</Text>
+                <Text>test get information on storage</Text>
             </TouchableOpacity>
         </View>
     )
