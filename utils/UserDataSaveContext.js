@@ -4,8 +4,14 @@ import {loadFavorite, saveFavorite} from "./workingWithStorageDevice";
 
 //информация с настройками пользователя (поиск радиостанций)
 const userDataInitialState = {
-    searchCountry: '',
-    searchCategory: '',
+    searchCountry: {
+        flag: "🇺🇦",
+        code: "UA",
+        name: "Ukraine",
+        nameRu: "Украина"   ,
+    },
+    switcher: 'country',
+    tag: '',
     saveStation: [],
 };
 //*** создание контекста для управления

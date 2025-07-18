@@ -109,19 +109,29 @@ const ListRadioStation = ({listStation, fnSelectedRadio, changeIndex, onScroll})
     }, []);
 
     return (
-        <Animated.FlatList
-            data={listStation}
-            onScroll={onScroll}
-            scrollEventThrottle={16}
-            contentContainerStyle={styling.mapList}
-            renderItem={renderListItem}
-            keyExtractor={(item) => item.stationuuid}
-            extraData={selectStationIndex}
-            getItemLayout={getItemLayout}
-            initialNumToRender={10}
-            maxToRenderPerBatch={10}
-            windowSize={11}
-        />
+        listStation.length > 0
+            ?
+            <Animated.FlatList
+                data={listStation}
+                onScroll={onScroll}
+                scrollEventThrottle={16}
+                contentContainerStyle={styling.mapList}
+                renderItem={renderListItem}
+                keyExtractor={(item) => item.stationuuid}
+                extraData={selectStationIndex}
+                getItemLayout={getItemLayout}
+                initialNumToRender={10}
+                maxToRenderPerBatch={10}
+                windowSize={11}
+            />
+            :
+            <View style={styling.waveNotFoundWrapper}>
+                <Text style={styling.waveNotFountMessage}>
+                    Извините, ничего не найдено.
+                    Попробуйте изменить страну или категорию.
+                </Text>
+            </View>
+
     )
 }
 
@@ -197,7 +207,24 @@ const styling = StyleSheet.create({
         color: 'white'
     },
     btnStar: {
+    },
+    waveNotFoundWrapper: {
+        marginHorizontal: '1%',
+        // paddingHorizontal: 0,
+        marginTop: 20,
+        width: '98%',
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: 'black',
+       backgroundColor: 'rgba(255,255,255,0.75)',
+    },
+    waveNotFountMessage: {
+        textAlign: 'center',
+        color: 'black',
+        fontSize: 30,
+        fontWeight: 600,
     }
+
 })
 export default ListRadioStation;
 

@@ -8,6 +8,9 @@ import RenderListCategory from "../components/RenderListCategory";
 import {fetchGetListCategory} from "../../utils/fetch/fetchGetCategory";
 import {useSearchContext} from "../components/SearchRadioStationContext";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import {useUserDataContext} from "../../utils/UserDataSaveContext";
+import {LoadingIcon} from "../../utils/customSvgIcon";
+import {LoadingAnimationComponent} from "../components/LoadingAnimationComponent";
 
 const initialStateForInputSearch = {
     country: {
@@ -20,26 +23,35 @@ const initialStateForInputSearch = {
 
 
 const Station = () => {
-    // const [categorySelected, setCategorySelected] = useState('');
-    // const [countrySelected, setCountrySelected] = useState(null);
     const [listCountry, setListCountry] = useState([]);
     const [listCategory, setListCategory] = useState([]);
     const [whatListSelect, setWhatListSelect] = useState('country');
     const [inputSearchFilter, setInputSearchFilter] = useState(initialStateForInputSearch);
-    const [searchState, setSearchState] = useSearchContext();
+    // const [searchState, setSearchState] = useSearchContext();
+    const [userData, setUserData] = useUserDataContext();
+    const [isLoading, setIsLoading] = useState(true);
 
+    console.log('isLoading', isLoading)
 
 
     const handlerSelectCountry = useCallback((value) => {
         // setCountrySelected(value)
-        setSearchState(prevState => ({country: value, tag: prevState.tag }));
+        setUserData(prevState => ({
+            ...prevState,
+            searchCountry: value,
+        }));
     }, []);
     const handlerSelectCategory = useCallback((value) => {
         // setCategorySelected(value);
-        setSearchState(prevState => ({country: prevState.country, tag: value}));
+        setUserData(prevState => ({
+            ...prevState,
+            tag: value,
+        }));
     }, []);
 
-    const switchBetweenLists = useCallback((value) => setWhatListSelect(value), []);
+    const switchBetweenLists = useCallback(() => {
+        setWhatListSelect(prevState => prevState === 'country' ? 'category' : 'country');
+    }, []);
 
     const handlerInputChangeValue = useCallback((value) => {
         setInputSearchFilter(prevState => {
@@ -62,7 +74,11 @@ const Station = () => {
                     inputValue: '',
                 }
             }
-        })
+        });
+        setUserData(prevState => ({
+            ...prevState,
+            tag: '',
+        }));
     }, [whatListSelect])
 
 
@@ -70,6 +86,7 @@ const Station = () => {
     useEffect(() => {
         const controller = new AbortController();
         const signal = controller.signal;
+        setIsLoading(true);
         Promise.all([
             fetchGetListCountry(signal),
             fetchGetListCategory(signal),
@@ -90,17 +107,28 @@ const Station = () => {
                     console.error(e);
                 }
             })
+            .finally(() => setIsLoading(false))
 
         return () => {
             controller.abort();
         }
     }, []);
 
+    //подзагрузка поля input (сохранения поиска категории пользователя)
+
+    useEffect(() => {
+        setInputSearchFilter(prevState => ({
+            ...prevState,
+            [whatListSelect]: {
+                inputValue: userData.tag
+            }
+        }))
+    }, []);
 
     return (
         <View style={styling.container}>
             <View style={[styling.headerContainer]}>
-                <SelectedCategoryAndCountry category={searchState.tag} country={searchState.country} switchBetweenLists={switchBetweenLists}/>
+                <SelectedCategoryAndCountry category={userData.tag} country={userData.searchCountry} switchBetweenLists={switchBetweenLists} whatListSelect={whatListSelect}/>
                 <View style={styling.inputWrapper}>
                     <TextInput
                         onChangeText={(text) => handlerInputChangeValue(text)}
@@ -119,21 +147,30 @@ const Station = () => {
                     </View>
                 </View>
             </View>
-            <View
-                style={styling.wrapperHeader}
-            >
-                { whatListSelect === 'country'
-                    ? <RenderListWorldStation list={listCountry} handlerSelectCountry={handlerSelectCountry} fieldInput={inputSearchFilter.country.inputValue}/>
-                    : <RenderListCategory list={listCategory} handlerSelectCategory={handlerSelectCategory} fieldInput={inputSearchFilter.category.inputValue}/>
-                }
-            </View>
+            {!isLoading
+            ?
+                <View
+                    style={styling.wrapperHeader}
+                >
+                    { whatListSelect === 'country'
+                        ? <RenderListWorldStation list={listCountry} handlerSelectCountry={handlerSelectCountry} fieldInput={inputSearchFilter.country.inputValue}/>
+                        : <RenderListCategory list={listCategory} handlerSelectCategory={handlerSelectCategory} fieldInput={inputSearchFilter.category.inputValue}/>
+                    }
+                </View>
+            :
+                <View style={styling.containerLoading}>
+                    <Text style={styling.testLoadingText}>
+                        <LoadingAnimationComponent/>
+                    </Text>
+                </View>
+            }
         </View>
-    );
+    )
 }
 
 const styling = StyleSheet.create({
     container: {
-        flex: 1
+        flex: 1,
     },
     headerContainer: {
         position: "absolute",
@@ -169,7 +206,15 @@ const styling = StyleSheet.create({
         top: '50%',
         transform: [{translateY: '-50%'}]
     },
-
+    containerLoading: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    testLoadingText: {
+        fontSize: 24,
+        color: 'green'
+    }
 
 })
 

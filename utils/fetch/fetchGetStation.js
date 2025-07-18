@@ -24,7 +24,7 @@ export const fetchGetStation = async (counter = 0, variantLink = []) => {
         }
         return await fetchGetStation(counter, variantLink);
     }catch (e) {
-        console.error(e)
+        console.error(e.message)
         counter += 1;
         if (counter > variantLink.length) {
             alert('не получилось загрузить список радиостанций');

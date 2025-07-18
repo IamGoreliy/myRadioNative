@@ -12,26 +12,32 @@ import Animated, {
     useAnimatedScrollHandler,
     withTiming,
 } from "react-native-reanimated";
+import {useUserDataContext} from "../../utils/UserDataSaveContext";
 
 const background = require('../../assets/backgroundByGrok.jpg');
-const HEADER_HEIGHT = 100;
+const HEADER_HEIGHT = 110;
 const DEFINITION_MOVEMENT_SCROLLING = 5;
 
 const Home = () => {
     const [stationsList, setStationsList] = useState([]);
     const [stationListForRender, setStationListForRender] = useState([]);
     const [radioWaveIndex, setRadioWaveIndex] = useState(null);
-    const [userSearchState] = useSearchContext(); //🏄🏄🏄 эта функция возвращает state и setState
+    const [userSearchState] = useSearchContext(); //🏄🏄🏄 эта функция возвращает state и setState (контекст, поиск и отображение юзера)
+    const [userData] = useUserDataContext(); // контекст который загружает все настройки пользователя + сохраненные станции
+    const [isFavorite, setIsFavorite] = useState(false);
+
 
     //анимация
     const lastScrollY = useSharedValue(0);
     const headerTranslateY = useSharedValue(0);
     const isHeaderVisible = useSharedValue(1);
 
+    console.log(userData)
+
 
 
     useEffect(() => {
-        fetchGetStation(0, variantArlLink(userSearchState.country.code, userSearchState.tag))
+        fetchGetStation(0, variantArlLink(userData.searchCountry.code, userData.tag, userData.switcher))
             .then(response => {
                 //вариант 1
                 // const list = response.filter((wave, index, self) => wave['url_resolved'] && self.findIndex(w => w.name === wave.name) === index);
@@ -48,17 +54,19 @@ const Home = () => {
                     uniqueName.add(wave.name);
                     return true;
                 });
-                console.log(list.length) // лог количество загруженных радиостанций
+                console.log(list.length) // 🦄🦄🦄 лог количество загруженных радиостанций
                 setStationsList(list);
             })
             .catch(error => console.error(error));
-    }, [userSearchState]);
+    }, [userData.searchCountry, userData.tag, userData.switcher]);
 
     useEffect(() => {
-        if (stationsList.length) {
+        if (!isFavorite) {
             setStationListForRender(stationsList);
+        } else {
+            setStationListForRender(userData.saveStation);
         }
-    }, [stationsList]);
+    }, [stationsList, isFavorite]);
 
     const selectedCategory = useCallback((value) => {
         setRadioWaveIndex(value);
@@ -85,6 +93,8 @@ const Home = () => {
         }
     }, [stationsList]);
 
+    const togglerFavorite = useCallback(() => setIsFavorite(!isFavorite), [isFavorite]);
+
     const handlerScrollHideTitleComponent = useAnimatedScrollHandler({
         onScroll: (event, ctx) => {
             const currentOffsetY = event.contentOffset.y;
@@ -107,27 +117,41 @@ const Home = () => {
 
     const animatedHeaderStyle = useAnimatedStyle(() => {
         return {
-            transform: [{translateY: headerTranslateY.value}]
+            transform: [{translateY: headerTranslateY.value}],
         };
+    })
+
+    const animatedListWrapper = useAnimatedStyle(() => {
+        return {
+            marginTop: withTiming(isHeaderVisible.value ? 105 : 0, {duration:  250}),
+        }
     })
 
     return (
             <ImageBackground
-                style={styles.container}
+                style={styled.container}
                 source={background}
             >
-                <Animated.View style={[styles.headerContainer, animatedHeaderStyle]}>
-                     <RenderTitleAndFilterHomePage country={userSearchState.country} handlerChangeFilter={handlerSearchNameRadioStation}/>
+                <Animated.View style={[styled.headerContainer, animatedHeaderStyle]}>
+                     <RenderTitleAndFilterHomePage
+                         country={userData.searchCountry}
+                         category={userData.tag}
+                         handlerChangeFilter={handlerSearchNameRadioStation}
+                         togglerFavorite={togglerFavorite}
+                         toggleFavoriteValue={isFavorite}
+                     />
                 </Animated.View>
-                <ListRadioStation
-                    listStation={stationListForRender}
-                    fnSelectedRadio={selectedCategory}
-                    changeIndex={radioWaveIndex}
-                    onScroll={handlerScrollHideTitleComponent}
-                />
+                <Animated.View style={animatedListWrapper}>
+                    <ListRadioStation
+                        listStation={stationListForRender}
+                        fnSelectedRadio={selectedCategory}
+                        changeIndex={radioWaveIndex}
+                        onScroll={handlerScrollHideTitleComponent}
+                    />
+                </Animated.View>
                 {/*<RadioPlayer selectCategory={search} listStation={stations}/>*/}
                 <RadioPlayerNew
-                    selectCategory={userSearchState.tag}
+                    selectCategory={userData.tag}
                     radioWave={stationListForRender[radioWaveIndex]}
                     handlerNextWave={nextRadioWave}
                     handlerPreWave={preRadioWave}
@@ -136,19 +160,20 @@ const Home = () => {
     );
 }
 
-const styles = StyleSheet.create({
+const styled = StyleSheet.create({
     container: {
         flex: 1,
         position: "relative",
     },
     headerContainer: {
         width: '100%',
-        height: 100,
+        height: 105,
         position: "absolute",
         top: 0,
         left: 0,
         zIndex: 1
-    }
+    },
+
 });
 
 export default Home;

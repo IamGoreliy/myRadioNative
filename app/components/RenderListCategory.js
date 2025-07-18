@@ -15,7 +15,7 @@ const RenderListCategory = ({list = [], handlerSelectCategory, fieldInput}) => {
     useEffect(() => {
         if (fieldInput !== '') {
             const filterList = list.filter(station => {
-                return station.name.toLowerCase().includes(fieldInput.toLowerCase());6
+                return station.name.toLowerCase().includes(fieldInput.toLowerCase());
             })
             setListForRender(filterList);
         } else {
