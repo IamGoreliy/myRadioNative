@@ -6,7 +6,7 @@ import Fontisto from '@expo/vector-icons/Fontisto';
 import {useUserDataContext} from "../../utils/UserDataSaveContext";
 export const SwitcherFilter = ({styleMain}) => {
     const [userData, setUserData] = useUserDataContext();
-    const [isActive, setIsActive] = useState(userData.switcher === 'country');
+    const [isActive, setIsActive] = useState(userData.switcher !== 'country');
     const togglerIsActive = useSharedValue(isActive);
 
     const moveToggler = useCallback(() => {
@@ -29,13 +29,13 @@ export const SwitcherFilter = ({styleMain}) => {
 
     const togglerAnimated = useAnimatedStyle(() => ({
         transform: [{
-            translateX: withTiming(togglerIsActive.value ? '108%' : '0%', {duration: 250})
+            translateX: withTiming(togglerIsActive.value ? '115%' : '0%', {duration: 250})
         }],
-        backgroundColor: togglerIsActive.value ? 'white' : 'white',
+        backgroundColor: 'white',
     }));
 
     const changeBackgroundColorBtn = useAnimatedStyle(() => ({
-        backgroundColor: withTiming(togglerIsActive.value ? 'green' : 'white'),
+        backgroundColor: withTiming(togglerIsActive.value ? 'rgba(129, 255, 108, 1)' : 'white'),
     }));
 
     return (
@@ -52,7 +52,7 @@ export const SwitcherFilter = ({styleMain}) => {
                         <Text>
                             {isActive
                                 ? <FontAwesome name="flag-o" size={23} color="black" />
-                                : <Fontisto name="applemusic" size={28} color="black" />
+                                : <Fontisto name="applemusic" size={28} color="red" />
                             }
                         </Text>
                     </Animated.View>
@@ -69,19 +69,21 @@ const styling = StyleSheet.create({
         height: 30,
         padding: 1,
         // backgroundColor: 'black',
-        borderWidth: 1,
+        // borderWidth: 1,
         borderRadius: 20,
     },
     toggler: {
         position: "absolute",
-        top: 0,
+        top: 1,
         justifyContent: "center",
         alignItems: "center",
         width: 28,
         height: 28,
         borderRadius: '50%',
         backgroundColor: 'black',
-        overflow: "hidden"
+        overflow: "hidden",
+        borderWidth: 1,
+        borderColor: 'black',
     },
     wrapperIcon: {
 

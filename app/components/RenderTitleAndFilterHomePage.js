@@ -46,13 +46,26 @@ const RenderTitleAndFilterHomePage = ({country, handlerChangeFilter, togglerFavo
                     onPress={togglerFavorite}
                     style={styling.btnFavorite}
                 >
-                    <Text>
                         {toggleFavoriteValue
-                            ? <AntDesign name="star" size={24} color="yellow" />
-                            : <AntDesign name="staro" size={20} color="yellow" />
+                            ?
+                            <View style={styling.wrapperIconFavoriteBtnGeneral}>
+                               <View style={styling.wrapperIconFavoriteBtn}>
+                                   <AntDesign name="star" size={24} color="rgba(255, 228, 0, 1)" />
+                               </View>
+                                <View style={styling.wrapperIconFavoriteBtn}>
+                                    <AntDesign name="staro" size={28} color="rgba(108, 200, 255, 1)" />
+                                </View>
+                            </View>
+                            :
+                            <View style={styling.wrapperIconFavoriteBtnGeneral}>
+                                <View style={styling.wrapperIconFavoriteBtn}>
+                                    <AntDesign name="staro" size={18} color="rgba(255, 228, 0, 1)" />
+                                </View>
+                                <View style={styling.wrapperIconFavoriteBtn}>
+                                    <AntDesign name="staro" size={28} color="rgba(108, 200, 255, 1)" />
+                                </View>
+                            </View>
                         }
-
-                    </Text>
                 </TouchableOpacity>
             </View>
             <TextInput
@@ -67,7 +80,7 @@ const RenderTitleAndFilterHomePage = ({country, handlerChangeFilter, togglerFavo
 
 const styling = StyleSheet.create({
     container: {
-        backgroundColor: 'white',
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
         borderBottomRightRadius: 10,
         borderBottomLeftRadius: 10,
         padding: 5,
@@ -82,21 +95,34 @@ const styling = StyleSheet.create({
     },
     input: {
         height: 40,
-        borderWidth: 1,
-        borderColor: 'black',
+        // borderWidth: 1,
+        // borderColor: 'red',
         marginTop: 15,
         borderRadius: 15,
         paddingHorizontal: 15,
         paddingVertical: 5,
+        backgroundColor: 'white',
     },
     btnFavorite: {
         width: 50,
         justifyContent: "center",
         borderWidth: 1,
-        borderColor: 'rgba(0,0,0,0.05)',
+        borderColor: 'rgba(0,0,0,0.2)',
         borderRadius: 5,
         flexDirection: "row",
         alignItems: "center",
+        // backgroundColor: 'rgba(210, 210, 210, 1)'
+    },
+    wrapperIconFavoriteBtnGeneral: {
+        position: "relative",
+        width: '100%',
+        height: '100%',
+    },
+    wrapperIconFavoriteBtn: {
+        position: "absolute",
+        top: '50%',
+        left: '50%',
+        transform: [{translateX: '-50%'}, {translateY: '-50%'}],
     },
     switcherStyling: {
         marginLeft: 20
@@ -105,7 +131,11 @@ const styling = StyleSheet.create({
         flexDirection: 'row'
     },
     titleDesc: (whatCategory, value = '') =>  ({
-        color: whatCategory === value ? 'green': 'black'
+        padding: 3,
+        color: whatCategory === value ? 'green': 'black',
+        fontWeight: whatCategory === value ? 700 : 300,
+        backgroundColor: whatCategory === value ? 'white' : 'transparent',
+        borderRadius: 5,
     })
 
 })

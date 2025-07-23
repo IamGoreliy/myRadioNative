@@ -123,7 +123,7 @@ const Home = () => {
 
     const animatedListWrapper = useAnimatedStyle(() => {
         return {
-            marginTop: withTiming(isHeaderVisible.value ? 105 : 0, {duration:  250}),
+            marginTop: withTiming(isHeaderVisible.value ? 120 : 0, {duration:  250}),
         }
     })
 
@@ -167,7 +167,7 @@ const styled = StyleSheet.create({
     },
     headerContainer: {
         width: '100%',
-        height: 105,
+        height: 115,
         position: "absolute",
         top: 0,
         left: 0,

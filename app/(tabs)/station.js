@@ -190,10 +190,11 @@ const styling = StyleSheet.create({
         backgroundColor: 'black',
     },
     input: {
+        paddingHorizontal: 10,
         height: '100%',
         borderBottomLeftRadius: 10,
         borderBottomRightRadius: 10,
-        backgroundColor: 'white'
+        backgroundColor: 'white',
     },
     btnClear: {
         backgroundColor: 'red',

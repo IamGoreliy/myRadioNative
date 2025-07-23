@@ -1,4 +1,4 @@
-import {StyleSheet, TouchableOpacity, View, Text} from "react-native";
+import {StyleSheet, TouchableOpacity, View, Text, Linking} from "react-native";
 import {useState, useEffect, useRef, useCallback, useMemo} from "react";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Foundation from '@expo/vector-icons/Foundation';
@@ -37,7 +37,6 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
     const [waveUrl, setWaveUrl] = useState(null);
     const [controlPanelExpand, setControlPanelExpand] = useState(false);
     const [trackTitle, setTrackTitle] = useState('Название трека...');
-
 
 
 
@@ -87,11 +86,24 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
 
     const togglePlay = useCallback(() => {
         setIsPlay(prevState => !prevState);
+
+
     }, []);
 
     const handlerExpand = useCallback(() => {
         setControlPanelExpand(prevState => !prevState);
     }, [])
+
+    const handlerGoHome = useCallback(async () => {
+        if (radioWave?.homepage) {
+            try {
+                await Linking.openURL(radioWave.homepage);
+            } catch (e) {
+                alert('не удалось открыть сайт ')
+                console.log('failed to open URL:',e)
+            }
+        }
+    }, [radioWave?.homepage])
 
 
 
@@ -130,6 +142,16 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
                     >
                         {trackTitle}
                     </Text>
+                    {controlPanelExpand &&
+                        <TouchableOpacity
+                            style={styling.goToHomeRadioBtn}
+                            onPress={handlerGoHome}
+                        >
+                            <Text>
+                                перейти на сайт радиостанции
+                            </Text>
+                        </TouchableOpacity>
+                    }
                 </View>
                 <View
                     style={[
@@ -286,6 +308,12 @@ const styling = StyleSheet.create({
     btnLabelOpen: {
         fontSize: 44
     },
+    goToHomeRadioBtn: {
+        marginTop: 50,
+        backgroundColor: 'white',
+        padding: 5,
+        borderRadius: 5,
+    }
 })
 
 export default RadioPlayerNew;
