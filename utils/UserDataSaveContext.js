@@ -13,6 +13,7 @@ const userDataInitialState = {
     switcher: 'country',
     tag: '',
     saveStation: [],
+    selectLanguage: 'UA',
 };
 //*** создание контекста для управления
 const UserDataContext = createContext({});

@@ -21,7 +21,7 @@ export const SearchRadioStationContext = ({children}) => {
     )
 }
 
-export const    useSearchContext = () => {
+export const useSearchContext = () => {
     const context = useContext(StationContext);
     if (context === undefined) {
         throw new Error('контекст должен использоваться внутри StationContext.Provider');

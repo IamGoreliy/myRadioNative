@@ -3,7 +3,6 @@ import {useState, useEffect, useCallback, useRef, createContext} from "react";
 import {fetchGetStation} from "../../utils/fetch/fetchGetStation";
 import RadioPlayerNew from "../components/RadioPlayerNew";
 import ListRadioStation from "../components/ListRadioStation";
-import {useSearchContext} from "../components/SearchRadioStationContext";
 import {variantArlLink} from "../../utils/fnListLinksAPI";
 import RenderTitleAndFilterHomePage from "../components/RenderTitleAndFilterHomePage";
 import Animated, {
@@ -22,19 +21,13 @@ const Home = () => {
     const [stationsList, setStationsList] = useState([]);
     const [stationListForRender, setStationListForRender] = useState([]);
     const [radioWaveIndex, setRadioWaveIndex] = useState(null);
-    const [userSearchState] = useSearchContext(); //🏄🏄🏄 эта функция возвращает state и setState (контекст, поиск и отображение юзера)
     const [userData] = useUserDataContext(); // контекст который загружает все настройки пользователя + сохраненные станции
     const [isFavorite, setIsFavorite] = useState(false);
-
 
     //анимация
     const lastScrollY = useSharedValue(0);
     const headerTranslateY = useSharedValue(0);
     const isHeaderVisible = useSharedValue(1);
-
-    console.log(userData)
-
-
 
     useEffect(() => {
         fetchGetStation(0, variantArlLink(userData.searchCountry.code, userData.tag, userData.switcher))
@@ -149,7 +142,6 @@ const Home = () => {
                         onScroll={handlerScrollHideTitleComponent}
                     />
                 </Animated.View>
-                {/*<RadioPlayer selectCategory={search} listStation={stations}/>*/}
                 <RadioPlayerNew
                     selectCategory={userData.tag}
                     radioWave={stationListForRender[radioWaveIndex]}

@@ -6,11 +6,12 @@ import {countriesList} from "../../utils/newBaseCountryFlag";
 import RenderListWorldStation from "../components/RenderListWorldStation";
 import RenderListCategory from "../components/RenderListCategory";
 import {fetchGetListCategory} from "../../utils/fetch/fetchGetCategory";
-import {useSearchContext} from "../components/SearchRadioStationContext";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import {useUserDataContext} from "../../utils/UserDataSaveContext";
 import {LoadingIcon} from "../../utils/customSvgIcon";
 import {LoadingAnimationComponent} from "../components/LoadingAnimationComponent";
+import {getCategoryTitles} from "../components/language/langTabsSettings";
+import {useDataLangContext} from "./_layout";
 
 const initialStateForInputSearch = {
     country: {
@@ -27,9 +28,9 @@ const Station = () => {
     const [listCategory, setListCategory] = useState([]);
     const [whatListSelect, setWhatListSelect] = useState('country');
     const [inputSearchFilter, setInputSearchFilter] = useState(initialStateForInputSearch);
-    // const [searchState, setSearchState] = useSearchContext();
     const [userData, setUserData] = useUserDataContext();
     const [isLoading, setIsLoading] = useState(true);
+    const [dataLang] = useDataLangContext();
 
     console.log('isLoading', isLoading)
 
@@ -134,6 +135,7 @@ const Station = () => {
                         onChangeText={(text) => handlerInputChangeValue(text)}
                         value={inputSearchFilter[whatListSelect].inputValue}
                         style={styling.input}
+                        placeholder={`${getCategoryTitles(dataLang, 'station')['inputPlaceholder']}...`}
                     />
                     <View
                         style={styling.svgClear}

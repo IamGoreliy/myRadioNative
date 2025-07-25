@@ -6,6 +6,9 @@ import {createSong} from "../../utils/controlPanelBtnNew";
 import ControlBtnAnimated from "./ControlBtnAnimated";
 import {Image} from "expo-image";
 import {startListening, stopListening} from '../../services/TrackMetadataService';
+import {useDataLangContext} from "../(tabs)/_layout";
+import {getCategoryTitles} from "./language/langTabsSettings";
+import {useUserDataContext} from "../../utils/UserDataSaveContext";
 
 const logoPlaceholder = require('../../assets/logoByGemini.webp');
 
@@ -29,6 +32,40 @@ const ButtonControl = ({
     )
 }
 
+const initialStateLangData = [
+    {
+        countryCode: 'UA',
+        appLang: {
+
+                alert: 'радіохвиля не обрана',
+                nameTrack: 'назва пісні',
+                loadingTrack: 'завантаження назви пісні...',
+                btnGoHome: 'Перейти на домашню сторінку',
+        }
+    },
+    {
+        countryCode: 'USA',
+        appLang: {
+
+            alert: 'Radio wave is not chosen',
+            nameTrack: 'The name of the song',
+            loadingTrack: 'Loading the name of the track...',
+            btnGoHome: 'Go to home page',
+        }
+    },
+    {
+        countryCode: 'RU',
+        appLang: {
+            alert: 'Радиоволна не выбрана',
+            nameTrack: 'Название песни',
+            loadingTrack: 'Загрузка названия трека...',
+            btnGoHome: 'Перейти на домашнюю страницу',
+        }
+    }
+
+]
+
+
 
 const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => {
     const [isPlay, setIsPlay] = useState(false);
@@ -36,14 +73,15 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
     const [isLoading, setIsLoading] = useState(false);
     const [waveUrl, setWaveUrl] = useState(null);
     const [controlPanelExpand, setControlPanelExpand] = useState(false);
-    const [trackTitle, setTrackTitle] = useState('Название трека...');
+    const [userData] = useUserDataContext();
+    const [trackTitle, setTrackTitle] = useState(null);
 
 
 
     useEffect(() => {
         if (radioWave) {
             setWaveUrl(radioWave["url_resolved"]);
-            setTrackTitle('Загрузка названия...')
+            setTrackTitle(`${findLang(initialStateLangData, 'nameTrack')}...`);
         }
     }, [radioWave]);
 
@@ -103,7 +141,12 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
                 console.log('failed to open URL:',e)
             }
         }
-    }, [radioWave?.homepage])
+    }, [radioWave?.homepage]);
+
+    const findLang = useCallback((dataTextForSection, section) => {
+        const textObjForSection = dataTextForSection.find(ele => ele.countryCode === userData.selectLanguage);
+        return textObjForSection['appLang'][section];
+    }, [userData.selectLanguage]);
 
 
 
@@ -130,7 +173,7 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
                     />
                     {controlPanelExpand &&
                         <Text style={styling.nameRadioStation}>
-                            {radioWave?.name ?? 'радиостанция не выбрана'}
+                            {radioWave?.name ?? findLang(initialStateLangData, 'alert')}
                         </Text>
                     }
                     <Text
@@ -140,7 +183,7 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
                         ]}
                         // numberOfLines={1}
                     >
-                        {trackTitle}
+                        {trackTitle ?? findLang(initialStateLangData, 'loadingTrack')}
                     </Text>
                     {controlPanelExpand &&
                         <TouchableOpacity
@@ -148,7 +191,7 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
                             onPress={handlerGoHome}
                         >
                             <Text>
-                                перейти на сайт радиостанции
+                                {findLang(initialStateLangData, 'btnGoHome')}
                             </Text>
                         </TouchableOpacity>
                     }

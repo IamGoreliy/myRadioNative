@@ -3,10 +3,14 @@ import {useState, useEffect} from "react";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import {SwitcherFilter} from "./SwitcherFilter";
 import {useUserDataContext} from "../../utils/UserDataSaveContext";
+import {useDataLangContext} from "../(tabs)/_layout";
+import {getCategoryTitles} from "./language/langTabsSettings";
 
 const RenderTitleAndFilterHomePage = ({country, handlerChangeFilter, togglerFavorite, category, toggleFavoriteValue}) => {
     const [valueInputCategory, setValueInputCategory] = useState('');
     const [userData] = useUserDataContext();
+    const [dataLanguage] = useDataLangContext();
+
 
 
     //будет происходить запись фильтра списка, при обновление valueInput
@@ -25,7 +29,7 @@ const RenderTitleAndFilterHomePage = ({country, handlerChangeFilter, togglerFavo
                     <View>
                         <View style={styling.descriptionWrapper}>
                             <Text style={styling.titleDesc(userData.switcher, 'country')}>
-                                Страна:
+                                {getCategoryTitles(dataLanguage, 'index')['title'][0]}:
                             </Text>
                             <Text>
                                 &nbsp; {country.flag} &nbsp; {country.name}
@@ -33,7 +37,7 @@ const RenderTitleAndFilterHomePage = ({country, handlerChangeFilter, togglerFavo
                         </View>
                         <View style={styling.descriptionWrapper}>
                             <Text style={styling.titleDesc(userData.switcher, 'category')}>
-                                Категория:
+                                {getCategoryTitles(dataLanguage, 'index')['title'][1]}:
                             </Text>
                             <Text>
                                 &nbsp; "{category}"
@@ -71,7 +75,7 @@ const RenderTitleAndFilterHomePage = ({country, handlerChangeFilter, togglerFavo
             <TextInput
                 onChangeText={text => setValueInputCategory(text)}
                 value={valueInputCategory}
-                placeholder={'поиск ...'}
+                placeholder={`${getCategoryTitles(dataLanguage, 'index')['inputPlaceholder']}...`}
                 style={styling.input}
             />
         </View>

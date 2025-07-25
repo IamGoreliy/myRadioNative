@@ -2,6 +2,8 @@ import {useEffect} from "react";
 import {View, Text, StyleSheet, TouchableOpacity} from "react-native";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Animated, {useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing} from "react-native-reanimated";
+import {useDataLangContext} from "../(tabs)/_layout";
+import {getCategoryTitles} from "./language/langTabsSettings";
 
 const AnimationIcon = ({whatSelect, size = 24, color = 'black'}) => {
     const rotate = useSharedValue(0);
@@ -34,7 +36,7 @@ const AnimationIcon = ({whatSelect, size = 24, color = 'black'}) => {
 
 
 const SelectedCategoryAndCountry = ({country, category, switchBetweenLists, whatListSelect}) => {
-
+    const [dataLang] = useDataLangContext();
     return (
         <View style={styling.container}>
             <View>
@@ -56,7 +58,7 @@ const SelectedCategoryAndCountry = ({country, category, switchBetweenLists, what
             >
                 <AnimationIcon whatSelect={whatListSelect} color={'white'}/>
                 <Text style={styling.btnLabel}>
-                    {whatListSelect === 'country' ? 'category' : 'country'}
+                    {whatListSelect === 'country' ? getCategoryTitles(dataLang, 'station')['btnChange'][0] : getCategoryTitles(dataLang, 'station')['btnChange'][1]}
                 </Text>
             </TouchableOpacity>
         </View>
