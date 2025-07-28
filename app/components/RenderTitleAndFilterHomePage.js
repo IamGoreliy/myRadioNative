@@ -111,11 +111,11 @@ const styling = StyleSheet.create({
         width: 50,
         justifyContent: "center",
         borderWidth: 1,
-        borderColor: 'rgba(0,0,0,0.2)',
+        borderColor: 'rgb(120,118,118)',
         borderRadius: 5,
         flexDirection: "row",
         alignItems: "center",
-        // backgroundColor: 'rgba(210, 210, 210, 1)'
+        backgroundColor: 'rgba(255, 255, 255, 1)'
     },
     wrapperIconFavoriteBtnGeneral: {
         position: "relative",

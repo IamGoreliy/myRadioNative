@@ -1,34 +1,45 @@
 {
   "expo": {
-    "name": "myRadio",
+    "name": "World-Waves",
     "slug": "my-radio",
     "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "icon": "./assets/logoByGemini.png",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/logoByGemini.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.india3.myapp"
+      "bundleIdentifier": "com.india3.World-Waves"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/logoByGemini.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.india3.myapp"
+      "package": "com.india3.World-Waves"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/logoByGemini.png"
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "84060433-fac8-491c-8bae-24213277053e"
+      }
+    }
   }
 }

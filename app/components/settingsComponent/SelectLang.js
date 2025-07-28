@@ -5,7 +5,7 @@ import {useCallback} from "react";
 import {useDataLangContext} from "../../(tabs)/_layout";
 import {getCategoryTitles} from "../language/langTabsSettings";
 
-const CreateBtn = ({title, countryFlag, handler, isActive}) => {
+const CreateBtn = ({title, countryFlag, handler, isActive, countrySection, userData}) => {
     return (
         <TouchableOpacity
             onPress={handler}
@@ -16,7 +16,7 @@ const CreateBtn = ({title, countryFlag, handler, isActive}) => {
             >
                 <View>
                     <Text
-                        style={styling.btnLabel}
+                        style={styling.btnLabel(countrySection, userData.selectLanguage)}
                     >
                         {title}
                     </Text>
@@ -81,6 +81,8 @@ export const SelectLang = () => {
                         countryFlag={ele.countryFlag}
                         isActive={ele.codeCountry === userData.selectLanguage}
                         handler={handlerChangleLangWithValue}
+                        countrySection={ele.codeCountry}
+                        userData={userData}
                     />
                 )
             })}
@@ -93,11 +95,14 @@ const styling = StyleSheet.create({
         // flex: 1,
         // justifyContent: 'center',
         // alignItems: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.65)',
         borderWidth: 1,
         padding: 10,
     },
     titleSection: {
-        color: 'red',
+        color: 'black',
+        fontSize: 24,
+        fontWeight: "bold"
     },
     btnSelectLangMain: {
         marginTop: 10,
@@ -107,9 +112,9 @@ const styling = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: "center"
     },
-    btnLabel: {
-        color: 'green',
+    btnLabel: (countrySection, countrySelect) => ({
+        color: countrySection === countrySelect ? 'green' :  'black',
         fontSize: 18,
         fontWeight: 'bold',
-    }
+    })
 })

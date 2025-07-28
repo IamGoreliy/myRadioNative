@@ -1,4 +1,4 @@
-import {View, Text, StyleSheet, TextInput, TouchableOpacity} from 'react-native';
+import {View, Text, StyleSheet, TextInput, TouchableOpacity, ImageBackground} from 'react-native';
 import SelectedCategoryAndCountry from "../components/SelectedCategoryAndCountry";
 import {useCallback, useEffect, useState} from "react";
 import {fetchGetListCountry} from "../../utils/fetch/fetchGetCountry";
@@ -10,8 +10,9 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import {useUserDataContext} from "../../utils/UserDataSaveContext";
 import {LoadingIcon} from "../../utils/customSvgIcon";
 import {LoadingAnimationComponent} from "../components/LoadingAnimationComponent";
-import {getCategoryTitles} from "../components/language/langTabsSettings";
+import {getCategoryTitles, userLanguage} from "../components/language/langTabsSettings";
 import {useDataLangContext} from "./_layout";
+import {background} from "./index";
 
 const initialStateForInputSearch = {
     country: {
@@ -31,8 +32,6 @@ const Station = () => {
     const [userData, setUserData] = useUserDataContext();
     const [isLoading, setIsLoading] = useState(true);
     const [dataLang] = useDataLangContext();
-
-    console.log('isLoading', isLoading)
 
 
     const handlerSelectCountry = useCallback((value) => {
@@ -127,7 +126,10 @@ const Station = () => {
     }, []);
 
     return (
-        <View style={styling.container}>
+        <ImageBackground
+            style={styling.container}
+            source={background}
+        >
             <View style={[styling.headerContainer]}>
                 <SelectedCategoryAndCountry category={userData.tag} country={userData.searchCountry} switchBetweenLists={switchBetweenLists} whatListSelect={whatListSelect}/>
                 <View style={styling.inputWrapper}>
@@ -161,12 +163,13 @@ const Station = () => {
                 </View>
             :
                 <View style={styling.containerLoading}>
+                    <LoadingAnimationComponent/>
                     <Text style={styling.testLoadingText}>
-                        <LoadingAnimationComponent/>
+                        {dataLang[3]['countryList']['windowPending']}
                     </Text>
                 </View>
             }
-        </View>
+        </ImageBackground>
     )
 }
 
@@ -183,7 +186,7 @@ const styling = StyleSheet.create({
     },
     wrapperHeader: {
         marginTop: 95,
-        backgroundColor: 'red',
+
         flex: 1
     },
     inputWrapper: {

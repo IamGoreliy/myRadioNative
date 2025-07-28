@@ -20,7 +20,19 @@ const variantLanguages = [
                     name: 'settings',
                     titleSelectLang: 'Оберіть мову',
                 },
-
+                {
+                    headerSelectCategory: {
+                        category: 'Категорія не обрана',
+                        country: 'Країна не обрана',
+                    },
+                    countryList: {
+                        windowPending: 'Завантаження',
+                        message: 'ні ця країна не заслуговує щоб її слухали. ЗАБЛОКОВАНО',
+                    }
+                },
+                {
+                    messageListNotFount: 'Вибачте, нічого не знайдено. Спробуйте змінити країну/категорію або додайте щось до улюбленого.',
+                }
             ],
         }
     },
@@ -46,12 +58,18 @@ const variantLanguages = [
                     titleSelectLang: 'Select Language',
                 },
                 {
-                    name: 'player',
-                    alert: 'Radio wave is not chosen',
-                    nameTrack: 'The name of the song',
-                    loadingTrack: 'Loading the name of the track...',
-                    btnGoHome: 'Go to home page',
+                    headerSelectCategory: {
+                        country: 'The country is not chosen',
+                        category: 'The category is not chosen',
+                    },
+                    countryList: {
+                        windowPending: 'Loading',
+                        message: 'This country is blocked',
+                    },
                 },
+                {
+                    messageListNotFount: 'Sorry, nothing found. Try to change the country/category or add something to your favorites.',
+                }
             ],
         }
     },
@@ -77,11 +95,17 @@ const variantLanguages = [
                     titleSelectLang: 'Выбирите язык',
                 },
                 {
-                    name: 'player',
-                    alert: 'Радиоволна не выбрана',
-                    nameTrack: 'Название песни',
-                    loadingTrack: 'Загрузка названия трека...',
-                    btnGoHome: 'Перейти на домашнюю страницу',
+                    headerSelectCategory: {
+                        category: 'категория не выбрана',
+                        country: 'страна не выбрана',
+                    },
+                    countryList: {
+                        windowPending: 'Загрузка',
+                        message: 'Та неее. Выбири другую страну и слушай нормальное радио',
+                    },
+                },
+                {
+                    messageListNotFount: 'Извините, ничего не найдено. Попробуйте изменить страну/категорию или добавьте что-то в избранное.',
                 },
             ],
         },

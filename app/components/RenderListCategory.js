@@ -6,6 +6,7 @@ const RenderListCategory = ({list = [], handlerSelectCategory, fieldInput}) => {
     const [listForRender, setListForRender] = useState(list);
     const [inputSearch, setInputSearch] = useState('');
 
+
     useEffect(() => {
         if (list.length) {
             setListForRender(list);
@@ -68,8 +69,8 @@ const styling = StyleSheet.create({
 
     },
     containerList: {
-        padding: 10,
-        backgroundColor: 'black',
+        padding: 3,
+        backgroundColor: 'transparent',
     },
     btn: {
         justifyContent: "center",
@@ -78,11 +79,13 @@ const styling = StyleSheet.create({
         height: 70,
         borderRadius: 5,
         borderWidth: 1,
-        borderColor: 'white',
+        borderColor: '#78f8f0',
+        backgroundColor: 'rgba(255, 255, 255, 0.75)',
         margin: 5
     },
     btnLabel: {
-        color: 'white'
+        fontWeight: "bold",
+        color: 'black'
     }
 })
 

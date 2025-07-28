@@ -1,9 +1,10 @@
 import {FlatList, View, Text, StyleSheet, TouchableOpacity} from "react-native";
 import {Image} from "expo-image";
 import {useCallback, useState, useEffect, memo} from "react";
-import Animated from "react-native-reanimated";
+import Animated, {useAnimatedStyle, withTiming} from "react-native-reanimated";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import {useUserDataContext} from "../../utils/UserDataSaveContext";
+import {useDataLangContext} from "../(tabs)/_layout";
 
 const logoPlaceholder = require('../../assets/logoByGemini.webp');
 
@@ -53,12 +54,20 @@ export const StationItem = memo(({handler, item, index, isSelect, starsIsSelect,
 const ListRadioStation = ({listStation, fnSelectedRadio, changeIndex, onScroll}) => {
     const [selectStationIndex, setSelectStationIndex] = useState(null);
     const [stateSaveRadio, setStateSaveRadio] = useUserDataContext();
+    const [langData] = useDataLangContext();
+    const [testText, setTestText] = useState('');
+
+
 
     useEffect(() => {
         if (changeIndex !== selectStationIndex) {
             setSelectStationIndex(changeIndex);
         }
     }, [changeIndex]);
+
+    useEffect(() => {
+        setTestText(langData[4]?.messageListNotFount)
+    }, [langData])
 
     const radioWave = useCallback((indexElement) => {
         fnSelectedRadio(indexElement);
@@ -127,8 +136,7 @@ const ListRadioStation = ({listStation, fnSelectedRadio, changeIndex, onScroll})
             :
             <View style={styling.waveNotFoundWrapper}>
                 <Text style={styling.waveNotFountMessage}>
-                    Извините, ничего не найдено.
-                    Попробуйте изменить страну или категорию.
+                    {testText}
                 </Text>
             </View>
 
@@ -140,6 +148,8 @@ const styling = StyleSheet.create({
         width: '96%',
         marginHorizontal: '2%',
         paddingBottom: 54,
+        marginTop: 120,
+
     },
     mainItem: {
         justifyContent: "center",
@@ -211,7 +221,7 @@ const styling = StyleSheet.create({
     waveNotFoundWrapper: {
         marginHorizontal: '1%',
         // paddingHorizontal: 0,
-        marginTop: 20,
+        marginTop: '50%',
         width: '98%',
         borderRadius: 20,
         borderWidth: 1,

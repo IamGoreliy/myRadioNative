@@ -39,16 +39,16 @@ const SelectedCategoryAndCountry = ({country, category, switchBetweenLists, what
     const [dataLang] = useDataLangContext();
     return (
         <View style={styling.container}>
-            <View>
+            <View style={styling.informationField}>
                 <Text style={styling.informationText}>
                     {
                         whatListSelect === 'country'
                             ? country.name
                                 ? `${country.flag} ${country.name}`
-                                : 'страна не выбрана'
+                                : dataLang[3]['headerSelectCategory']['country']
                             : category
                                 ? category
-                                : 'категория не выбрана'
+                                : dataLang[3]['headerSelectCategory']['category']
                     }
                 </Text>
             </View>
@@ -56,7 +56,7 @@ const SelectedCategoryAndCountry = ({country, category, switchBetweenLists, what
                 onPress={switchBetweenLists}
                 style={styling.btn}
             >
-                <AnimationIcon whatSelect={whatListSelect} color={'white'}/>
+                <AnimationIcon whatSelect={whatListSelect} color={'black'}/>
                 <Text style={styling.btnLabel}>
                     {whatListSelect === 'country' ? getCategoryTitles(dataLang, 'station')['btnChange'][0] : getCategoryTitles(dataLang, 'station')['btnChange'][1]}
                 </Text>
@@ -72,25 +72,32 @@ const styling = StyleSheet.create({
         alignItems: 'center',
         padding: 10,
         height: 60,
-        backgroundColor: 'black',
+        backgroundColor: 'rgba(255, 255, 255, 0.65)',
         borderWidth: 1,
-        borderColor: 'rgb(255,103,37)',
+        // borderColor: 'rgb(255,103,37)',
     },
     informationField: {
-
+        padding: 5,
+        borderWidth: 2,
+        borderColor: 'transparent',
+        borderRadius: 5,
+        backgroundColor: 'white',
     },
     informationText: {
-        color: 'white'
+        color: 'black',
     },
     btn: {
         flexDirection: 'row',
-        borderWidth: 1,
-        borderColor: 'white',
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: 'transparent',
         borderRadius: 5,
-        padding: 5
+        padding: 5,
+        backgroundColor: 'white',
     },
     btnLabel: {
-        color: 'white'
+        color: 'black',
+        marginLeft: 10,
     }
 })
 

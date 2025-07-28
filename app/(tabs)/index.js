@@ -13,7 +13,7 @@ import Animated, {
 } from "react-native-reanimated";
 import {useUserDataContext} from "../../utils/UserDataSaveContext";
 
-const background = require('../../assets/backgroundByGrok.jpg');
+export const background = require('../../assets/backgroundByGrok.jpg');
 const HEADER_HEIGHT = 110;
 const DEFINITION_MOVEMENT_SCROLLING = 5;
 
@@ -32,7 +32,12 @@ const Home = () => {
     useEffect(() => {
         fetchGetStation(0, variantArlLink(userData.searchCountry.code, userData.tag, userData.switcher))
             .then(response => {
-                //вариант 1
+                //вариант 1 //🦄🦄🦄 если включить анимацию список перестает реагировать на нажатие из за этого пришлось отказать от анимации.
+    // const animatedListWrapper = useAnimatedStyle(() => {
+    //     return {
+    //         marginTop: withTiming(isHeaderVisible.value ? 120 : 0, {duration:  1}),
+    //     }
+    // })
                 // const list = response.filter((wave, index, self) => wave['url_resolved'] && self.findIndex(w => w.name === wave.name) === index);
                 //вариант 2
 
@@ -114,18 +119,17 @@ const Home = () => {
         };
     })
 
-    const animatedListWrapper = useAnimatedStyle(() => {
-        return {
-            marginTop: withTiming(isHeaderVisible.value ? 120 : 0, {duration:  250}),
-        }
-    })
-
     return (
             <ImageBackground
                 style={styled.container}
                 source={background}
             >
-                <Animated.View style={[styled.headerContainer, animatedHeaderStyle]}>
+                <Animated.View
+                    style={[
+                        styled.headerContainer,
+                        animatedHeaderStyle
+                    ]}
+                >
                      <RenderTitleAndFilterHomePage
                          country={userData.searchCountry}
                          category={userData.tag}
@@ -134,7 +138,7 @@ const Home = () => {
                          toggleFavoriteValue={isFavorite}
                      />
                 </Animated.View>
-                <Animated.View style={animatedListWrapper}>
+                <Animated.View>
                     <ListRadioStation
                         listStation={stationListForRender}
                         fnSelectedRadio={selectedCategory}

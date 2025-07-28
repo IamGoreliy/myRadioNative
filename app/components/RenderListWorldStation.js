@@ -2,10 +2,14 @@ import {FlatList, View, Text, StyleSheet, TouchableOpacity, TextInput} from "rea
 import {BlurView} from "expo-blur";
 import {useState, useEffect} from "react";
 import Animated from "react-native-reanimated";
+import {userLanguage} from "./language/langTabsSettings";
+import {useUserDataContext} from "../../utils/UserDataSaveContext";
+
 
 const RenderListWorldStation = ({list = [], handlerSelectCountry, fieldInput}) => {
     const [listForRender, setListForRender] = useState(list);
     // const [inputSearch, setInputSearch] = useState('');
+    const [userData] = useUserDataContext();
 
     useEffect(() => {
         if (list.length) {
@@ -46,21 +50,42 @@ const RenderListWorldStation = ({list = [], handlerSelectCountry, fieldInput}) =
                 contentContainerStyle={styling.containerFlag}
                 scrollEventThrottle={16}
                 renderItem={({item}) => {
-                    return (
-                        <BlurView intensity={90} tint={"light"} style={styling.flagBtn}>
-                            <TouchableOpacity
-                                onPress={() => handlerSelectCountry(item)  }
-                                style={styling.flagBtn}
-                            >
-                                <Text style={styling.flagImage}>
-                                    {item.flag}
-                                </Text>
-                                <Text>
-                                    {item.name}
-                                </Text>
-                            </TouchableOpacity>
-                        </BlurView>
 
+                    return (
+                        <>
+                            {item.code !== 'RU'
+                                ? (
+                                    <BlurView intensity={100} tint={"light"} style={styling.flagBtn}>
+                                        <TouchableOpacity
+                                            onPress={() => handlerSelectCountry(item)}
+                                            style={styling.flagBtn}
+                                        >
+                                            <Text style={styling.flagImage}>
+                                                {item.flag}
+                                            </Text>
+                                            <Text>
+                                                {item.name}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </BlurView>
+                                )
+                                : (
+                                    <BlurView intensity={100} tint={"light"} style={styling.flagBtn}>
+                                        <TouchableOpacity
+                                            onPress={() => alert(userLanguage(userData.selectLanguage)['appLang']['page'][3]['countryList']['message'])}
+                                            style={styling.flagBtn}
+                                        >
+                                            <Text style={styling.flagImage}>
+                                                {item.flag}
+                                            </Text>
+                                            <Text>
+                                                {item.name}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </BlurView>
+                                )
+                            }
+                        </>
                     )
                 }}
                 keyExtractor={(item, index) => index.toString()}
@@ -76,8 +101,8 @@ const styling = StyleSheet.create({
         paddingTop: 0,
     },
     containerFlag: {
-        backgroundColor: 'black',
-        padding: 10,
+        backgroundColor: 'transparent',
+        padding: 3,
     },
     flagBtn: {
         justifyContent: 'center',
