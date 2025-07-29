@@ -1,14 +1,16 @@
-import {StyleSheet, TouchableOpacity, View, Text, Linking} from "react-native";
-import {useState, useEffect, useRef, useCallback, useMemo} from "react";
+import {StyleSheet, TouchableOpacity, View, Text, Linking, ScrollView} from "react-native";
+import {useState, useEffect, useCallback, } from "react";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Foundation from '@expo/vector-icons/Foundation';
 import {createSong} from "../../utils/controlPanelBtnNew";
 import ControlBtnAnimated from "./ControlBtnAnimated";
 import {Image} from "expo-image";
 import {startListening, stopListening} from '../../services/TrackMetadataService';
-import {useDataLangContext} from "../(tabs)/_layout";
-import {getCategoryTitles} from "./language/langTabsSettings";
 import {useUserDataContext} from "../../utils/UserDataSaveContext";
+import {ShazamButton} from "./shazamBtn/ShazamButton";
+import randomcolor from "randomcolor";
+import Animated, {useSharedValue, useAnimatedStyle, withTiming} from "react-native-reanimated";
+import {Audio, InterruptionModeAndroid} from 'expo-av';
 
 const logoPlaceholder = require('../../assets/logoByGemini.webp');
 
@@ -75,8 +77,26 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
     const [controlPanelExpand, setControlPanelExpand] = useState(false);
     const [userData] = useUserDataContext();
     const [trackTitle, setTrackTitle] = useState(null);
+    const startColor = useSharedValue(0);
+    const [colors, setColors] = useState({
+        current: 'red',
+        next: randomcolor({luminosity: 'bright'})
+    })
 
+    useEffect(() => {
+        const idChangeColorInterval = setInterval(() => {
+            setColors(prevState => ({
+                current: prevState.next,
+                next: randomcolor({luminosity: 'bright'}),
+            }))
+            startColor.value = 0;
+            startColor.value = withTiming(1, {duration: 2000});
+        }, 2000);
 
+        return () => {
+            clearInterval(idChangeColorInterval);
+        }
+    }, []);
 
     useEffect(() => {
         if (radioWave) {
@@ -84,6 +104,22 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
             setTrackTitle(`${findLang(initialStateLangData, 'nameTrack')}...`);
         }
     }, [radioWave]);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                await Audio.setAudioModeAsync({
+                    staysActiveInBackground: true,
+                    shouldDuckAndroid: true,
+                    interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
+                    playThroughEarpieceAndroid: false, // Убедимся, что играет через динамик, а не "ухо"
+                });
+            } catch (e) {
+                console.error('Failed to set audio mode', e);
+            }
+        })();
+
+    }, []);
 
     //создает из ссылки проигрыватель и как только волна будет загружена начнется воспроизведение
     useEffect(() => {
@@ -148,14 +184,20 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
         return textObjForSection['appLang'][section];
     }, [userData.selectLanguage]);
 
+    const AnimatedColorForControlPanel = useAnimatedStyle(() => {
+        return {
+            borderColor: colors.current
+        }
+    })
 
 
     return (
         <View style={styling.container}>
-            <View
+            <Animated.View
                 style={[
                     styling.controlPanel,
                     controlPanelExpand && styling.controlPanelIsOpen,
+                    AnimatedColorForControlPanel
                 ]}
             >
                 <View
@@ -172,28 +214,38 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
                         ]}
                     />
                     {controlPanelExpand &&
-                        <Text style={styling.nameRadioStation}>
-                            {radioWave?.name ?? findLang(initialStateLangData, 'alert')}
+                        <View style={styling.nameRadioStation}>
+                            <ScrollView>
+                                <Text style={styling.nameRadioStationLabel}>
+                                    {radioWave?.name ?? findLang(initialStateLangData, 'alert')}
+                                </Text>
+                            </ScrollView>
+                        </View>
+                    }
+                    {controlPanelExpand &&
+                        <Text
+                            style={[
+                                styling.trackTitle,
+                                controlPanelExpand && styling.trackTitleOpen,
+                            ]}
+                            // numberOfLines={1}
+                        >
+                            {trackTitle ?? findLang(initialStateLangData, 'loadingTrack')}
                         </Text>
                     }
-                    <Text
-                        style={[
-                            styling.trackTitle,
-                            controlPanelExpand && styling.trackTitleOpen,
-                        ]}
-                        // numberOfLines={1}
-                    >
-                        {trackTitle ?? findLang(initialStateLangData, 'loadingTrack')}
-                    </Text>
                     {controlPanelExpand &&
-                        <TouchableOpacity
-                            style={styling.goToHomeRadioBtn}
-                            onPress={handlerGoHome}
-                        >
-                            <Text>
-                                {findLang(initialStateLangData, 'btnGoHome')}
-                            </Text>
-                        </TouchableOpacity>
+                        <>
+                            <TouchableOpacity
+                                style={styling.goToHomeRadioBtn}
+                                onPress={handlerGoHome}
+                            >
+                                <Text>
+                                    {findLang(initialStateLangData, 'btnGoHome')}
+                                </Text>
+                            </TouchableOpacity>
+                        </>
+                    }
+                    {!controlPanelExpand && <ShazamButton size={34}/>
                     }
                 </View>
                 <View
@@ -236,14 +288,20 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
                     }
                 </View>
                 {controlPanelExpand &&
-                    <ButtonControl
-                        managementFN={handlerExpand}
-                        styleBtn={styling.btnExpandOpen}
-                        styleLabel={styling.btnLabel}>
-                            <Foundation name="arrows-compress" size={24} color="white" />
-                    </ButtonControl>
+                    <>
+                        <ButtonControl
+                            managementFN={handlerExpand}
+                            styleBtn={styling.btnExpandOpen}
+                            styleLabel={styling.btnLabel}>
+                                <Foundation name="arrows-compress" size={24} color="white" />
+                        </ButtonControl>
+                        <View style={styling.shazamButtonOnOpenPlayer}>
+                            <ShazamButton size={44}/>
+                <       /View>
+                    </>
                 }
-            </View>
+
+            </Animated.View>
         </View>
     )
 }
@@ -270,8 +328,8 @@ const styling = StyleSheet.create({
         backgroundColor: 'rgba(0, 0, 0, 0.85)',
         justifyContent: "space-between",
         alignItems: 'center',
-        borderColor: '#FF4D00FF',
-        borderWidth: 1,
+        // borderColor: '#FF4D00FF',
+        borderWidth: 2,
         transform: [{
             translateX: '-50%',
         }],
@@ -305,9 +363,13 @@ const styling = StyleSheet.create({
         resizeMode: 'contain'
     },
     nameRadioStation: {
+        maxWidth: '100%',
+        height: 100,
+    },
+    nameRadioStationLabel: {
         fontWeight: 700,
         fontSize: 24,
-        color: 'white',
+        color: 'red',
     },
     trackTitle: {
         marginLeft: 10,
@@ -356,6 +418,11 @@ const styling = StyleSheet.create({
         backgroundColor: 'white',
         padding: 5,
         borderRadius: 5,
+    },
+    shazamButtonOnOpenPlayer: {
+        position: "absolute",
+        bottom: 20,
+        left: 10,
     }
 })
 

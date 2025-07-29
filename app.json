@@ -25,7 +25,15 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.india3.World-Waves"
+      "package": "com.india3.World-Waves",
+      "permissions": [
+        "FOREGROUND_SERVICE"
+      ],
+      "queries": [
+        {
+          "package": "com.shazam.android"
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/logoByGemini.png"

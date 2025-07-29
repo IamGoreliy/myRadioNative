@@ -60,7 +60,7 @@ const TabsLayout = () => {
                             options={{
                                 title: langNavBtn[0],
                                 headerShown: false,
-                                tabBarIcon: () => <MaterialIcons name="radio" size={24} color='black' />
+                                tabBarIcon: () => <MaterialIcons name="radio" size={24} color='white' />
                             }}
                         />
                         <Tabs.Screen
@@ -68,7 +68,7 @@ const TabsLayout = () => {
                             options={{
                                 title: langNavBtn[1],
                                 headerShown: false,
-                                tabBarIcon: () => <MaterialCommunityIcons name="waveform" size={24} color="black" />
+                                tabBarIcon: () => <MaterialCommunityIcons name="waveform" size={24} color="white" />
                             }}
                         />
                         <Tabs.Screen
@@ -76,7 +76,7 @@ const TabsLayout = () => {
                             options={{
                                 title: langNavBtn[2],
                                 headerShown: false,
-                                tabBarIcon: () => <Ionicons name="settings" size={24} color="black" />
+                                tabBarIcon: () => <Ionicons name="settings" size={24} color="white" />
                             }}
                         />
                     </Tabs>

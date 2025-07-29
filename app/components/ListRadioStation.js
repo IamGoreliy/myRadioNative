@@ -31,9 +31,12 @@ export const StationItem = memo(({handler, item, index, isSelect, starsIsSelect,
                             source={item.favicon ? {uri: item.favicon} : logoPlaceholder}
                         />
                         <Text
-                            style={styling.nameStation}
+                            style={[
+                                styling.nameStation,
+                                isSelect && styling.nameStationSelect
+                            ]}
                         >
-                            {item.name}
+                            {item.name.length > 30 ? item.name.slice(0, 30) + '...' : item.name}
                         </Text>
                     </View>
                     <TouchableOpacity
@@ -82,12 +85,12 @@ const ListRadioStation = ({listStation, fnSelectedRadio, changeIndex, onScroll})
                 newState = {
                     ...prevState,
                     saveStation: [...prevState.saveStation, radioWave],
-                };
+                }
             } else {
                newState = {
                    ...prevState,
                    saveStation: prevState.saveStation.filter(curRadioWave => curRadioWave.stationuuid !== radioWave.stationuuid),
-               };
+               }
             }
             return newState;
         });
@@ -214,9 +217,12 @@ const styling = StyleSheet.create({
         height: 20,
     },
     nameStation: {
-        color: 'white'
+        color: 'rgba(210, 210, 210, 1)',
+        marginLeft: 10,
+        fontWeight: 'bold'
     },
-    btnStar: {
+    nameStationSelect: {
+        color: 'rgb(193,255,118)',
     },
     waveNotFoundWrapper: {
         marginHorizontal: '1%',
