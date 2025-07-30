@@ -32,7 +32,7 @@ const RenderTitleAndFilterHomePage = ({country, handlerChangeFilter, togglerFavo
                                 {getCategoryTitles(dataLanguage, 'index')['title'][0]}:
                             </Text>
                             <Text>
-                                &nbsp; {country.flag} &nbsp; {country.name}
+                                &nbsp; {country.flag} &nbsp; {country.name.length > 20 ? country.name.slice(0, 20) + '...': country.name}
                             </Text>
                         </View>
                         <View style={styling.descriptionWrapper}>

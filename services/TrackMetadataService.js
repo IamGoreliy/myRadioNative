@@ -18,30 +18,50 @@ let metadataListener = null;
 let errorListener = null;
 
 export const startListening = (streamUrl, onTitleUpdate) => {
-    if (!eventEmitter) return;
-    stopListening();
 
-    metadataListener = eventEmitter.addListener('onMetadataReceived', (title) => {
-        if (onTitleUpdate) {
-            onTitleUpdate(title);
-        }
-    });
+    return new Promise((resolve, reject) => {
+        if (!eventEmitter) return;
+        stopListening();
 
-    errorListener = eventEmitter.addListener('onError', (error) => {
-        if ( error.includes('Canceled') || error.includes('Socket closed') ) {
-            return
-        }
-        console.error('Ошибка в нативном стриме:', error);
-    });
-
-    IcyMetaModule.startStreaming(streamUrl)
-        .then(status => console.log('Статус запуска стриминга:', status))
-        .catch(e => {
-            if ( e.message.includes('Canceled') || e.message.includes('Socket closed') ) {
-                return;
+        metadataListener = eventEmitter.addListener('onMetadataReceived', (title) => {
+            if (onTitleUpdate) {
+                if (title && title.trim() !== '') {
+                    onTitleUpdate(title);
+                }
             }
-            console.error('Ошибка при запуске стриминга:', e.message)
         });
+
+        errorListener = eventEmitter.addListener('onError', (error) => {
+            if (
+                error.includes('Canceled') ||
+                error.includes('Socket closed') ||
+                error.includes('Socket is closed') ||
+                error.includes('does not support ICY metadata')){
+                return
+            }
+            console.error(`Ошибка в нативном стриме:, ${error}`);
+        });
+
+        IcyMetaModule.startStreaming(streamUrl)
+            .then(res => {
+                console.log('[TrackMetadataService] Стриминг успешно запущен, метаданные ожидаются.', res);
+                if (res === null) {
+                    resolve({status: 'NO_METADATA', hasMetadata: false, nameTrack: null});
+                    return;
+                }
+                resolve({status: 'SUCCESS', hasMetadata: true, nameTrack: res});
+            })
+            .catch(e => {
+                if ( e.message.includes('Canceled') ||
+                    e.message.includes('Socket closed') ||
+                    e.message.includes('Socket is closed') ||
+                    e.message.includes('does not support ICY metadata')) {
+                    resolve({status: 'NO_METADATA', hasMetadata: false, nameTrack: null});
+                } else {
+                    reject(e);
+                }
+            });
+    });
 };
 
 export const stopListening = () => {

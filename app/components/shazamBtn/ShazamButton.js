@@ -18,7 +18,7 @@ const AnimatedShazamIconColor = Animated.createAnimatedComponent(Fontisto);
 const shazamPackageName = 'com.shazam.android';
 const shazamAndroidStoreUrl = 'market://details?id=com.shazam.android';
 
-export const ShazamButton = ({size}) => {
+export const ShazamButton = ({size, sx = {}, startAnimation}) => {
     const startPositionRotate = useSharedValue(0);
     const colorAnimation = useSharedValue(0);
     const [colors, setColors] = useState({
@@ -27,23 +27,30 @@ export const ShazamButton = ({size}) => {
     })
 
     useEffect(() => {
-        startPositionRotate.value = withRepeat(
-            withTiming(1, {duration: 4000, easing: Easing.linear}),
-            -1,
-            true
-        );
-        const idColorInterval = setInterval(() => {
-            setColors(prevState => ({
-                current: prevState.next,
-                next: randomcolor({luminosity: 'bright'}),
-            }))
-            colorAnimation.value = 0;
-            colorAnimation.value = withTiming(1, {duration: 2000});
-        }, 2000)
-        return () => {
-            clearInterval(idColorInterval);
+        let idColorInterval;
+        if (startAnimation) {
+            startPositionRotate.value = withRepeat(
+                withTiming(1, {duration: 4000, easing: Easing.linear}),
+                -1,
+                true
+            );
+            idColorInterval = setInterval(() => {
+                setColors(prevState => ({
+                    current: prevState.next,
+                    next: randomcolor({luminosity: 'bright'}),
+                }))
+                colorAnimation.value = 0;
+                colorAnimation.value = withTiming(1, {duration: 2000});
+            }, 2000)
         }
-    }, []);
+        return () => {
+            if (idColorInterval) {
+                clearInterval(idColorInterval);
+                colorAnimation.value = 0;
+                startPositionRotate.value = 0;
+            }
+        }
+    }, [startAnimation]);
 
     const animationRotate = useAnimatedStyle(() => ({
         transform: [{rotate: `${startPositionRotate.value * 720 }deg`}],
@@ -93,7 +100,7 @@ export const ShazamButton = ({size}) => {
 
             <AnimatedTouchableOpacity
                 onPress={handlerShazam}
-                style={[styling.container(size), animationRotate]}
+                style={[styling.container(size, sx), animationRotate]}
             >
                 <AnimatedShazamIconColor name="shazam" size={size} style={animationColorShazamIcon} />
             </AnimatedTouchableOpacity>
@@ -102,11 +109,13 @@ export const ShazamButton = ({size}) => {
 }
 
 const styling = StyleSheet.create({
-    container: (size) =>  ({
+    container: (size, sx) =>  ({
         width: size + 3,
         height: size + 3,
         justifyContent: 'center',
         alignItems: 'center',
+        ...sx,
+
         // borderRadius: size / 2 ,
         // borderWidth: 1,
         // borderColor: 'white'

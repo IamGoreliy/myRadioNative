@@ -42,7 +42,9 @@ const initialStateLangData = [
                 alert: 'радіохвиля не обрана',
                 nameTrack: 'назва пісні',
                 loadingTrack: 'завантаження назви пісні...',
+                noTrackInfo: 'станція не має інформації про треки',
                 btnGoHome: 'Перейти на домашню сторінку',
+                notLoadingNameTrack: 'Не вдалось завантажити назву треку',
         }
     },
     {
@@ -52,7 +54,9 @@ const initialStateLangData = [
             alert: 'Radio wave is not chosen',
             nameTrack: 'The name of the song',
             loadingTrack: 'Loading the name of the track...',
+            noTrackInfo: 'The station does not have track information',
             btnGoHome: 'Go to home page',
+            notLoadingNameTrack: 'Failed to load the track name',
         }
     },
     {
@@ -61,7 +65,9 @@ const initialStateLangData = [
             alert: 'Радиоволна не выбрана',
             nameTrack: 'Название песни',
             loadingTrack: 'Загрузка названия трека...',
+            noTrackInfo: 'Станция не имеет информации о треках',
             btnGoHome: 'Перейти на домашнюю страницу',
+            notLoadingNameTrack: 'Не удалось загрузить название трека',
         }
     }
 
@@ -82,6 +88,8 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
         current: 'red',
         next: randomcolor({luminosity: 'bright'})
     })
+
+    // console.log('trackTitle', trackTitle)
 
     useEffect(() => {
         const idChangeColorInterval = setInterval(() => {
@@ -128,18 +136,47 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
         }
         if (isPlay) {
             createSong(sound, setSound, waveUrl, setIsLoading, setIsPlay)
-                .catch(e => console.error(e));
+                .catch(e => console.error('Ошибка воспроизведения аудио:', e));
 
-            startListening(waveUrl, (newTitle) => {
-                setTrackTitle(newTitle);
-            });
+            (async () => {
+                const maxAttempts = 5;
+                const delay = ms => new Promise(res => setTimeout(res, ms));
+                for (let i = 0; i < maxAttempts; i++) {
+                    try {
+                        console.log(`попытка № ${i + 1} запуск метаданных...`);
+                        const res = await startListening(waveUrl, (newTitle) => {
+                            setTrackTitle(newTitle);
+                        });
+                        if (res.hasMetadata && res.nameTrack) {
+                            console.log('[Плеер] Прослушивание метаданных успешно запущено, трек получен.');
+                            setTrackTitle(res.nameTrack);
+                            break;
+                        }
+                        if (!res.hasMetadata) {
+                            console.log('[Плеер] Станция не предоставляет метаданные.')
+                            setTrackTitle(findLang(initialStateLangData, 'noTrackInfo'));
+                            break;
+                        }
+                        console.log(`[Плеер] Метаданные есть, но трек пока не пришел. Ждем...`);
+
+                    } catch (e) {
+                        console.log('непридвиденная ошибка', e.message);
+                    }
+                    if (i === maxAttempts - 1) {
+                        await delay(2000);
+                    } else {
+                        console.log(`[Плеер] Не удалось получить название трека после ${maxAttempts} попыток.`);
+                        setTrackTitle(findLang(initialStateLangData, 'notLoadingNameTrack'));
+                    }
+                }
+            })();
         } else {
             if(sound) {
                 sound.unloadAsync();
             }
             setSound(null);
             stopListening();
-            setTrackTitle('Название трека...')
+            setTrackTitle('Название трека...');
         }
 
         return () => {
@@ -206,13 +243,15 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
                         controlPanelExpand && styling.wrapperInfoRadioStationOnOpen,
                     ]}
                 >
-                    <Image
-                        source={radioWave?.favicon ? {uri: radioWave.favicon} : logoPlaceholder}
-                        style={[
-                            styling.logoRadio,
-                            controlPanelExpand && styling.logoRadioIsOpen,
-                        ]}
-                    />
+                    <View style={styling.wrapperLogoRadioPlayerClose}>
+                        <Image
+                            source={radioWave?.favicon ? {uri: radioWave.favicon} : logoPlaceholder}
+                            style={[
+                                styling.logoRadio,
+                                controlPanelExpand && styling.logoRadioIsOpen,
+                            ]}
+                        />
+                    </View>
                     {controlPanelExpand &&
                         <View style={styling.nameRadioStation}>
                             <ScrollView>
@@ -245,9 +284,8 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
                             </TouchableOpacity>
                         </>
                     }
-                    {!controlPanelExpand && <ShazamButton size={34}/>
-                    }
                 </View>
+                {!controlPanelExpand && <ShazamButton size={34} sx={{marginLeft: 20}} startAnimation={isPlay}/>}
                 <View
                     style={[
                         styling.btnWrapper,
@@ -323,7 +361,7 @@ const styling = StyleSheet.create({
         left: '50%',
         paddingHorizontal: 10,
         width: '100%',
-        height: 50,
+        height: 55,
         borderRadius: 12,
         backgroundColor: 'rgba(0, 0, 0, 0.85)',
         justifyContent: "space-between",
@@ -352,10 +390,17 @@ const styling = StyleSheet.create({
         alignItems: "center"
     },
     //лого радиостанции
+    wrapperLogoRadioPlayerClose: {
+        // width: 70,
+        // height: 40,
+        // resizeMode: 'contain',
+        backgroundColor: 'white',
+    },
     logoRadio: {
-        width: 100,
+        width: 70,
         height: 40,
-        resizeMode: 'contain',
+        resizeMode: 'cover',
+        objectFit: 'center'
     },
     logoRadioIsOpen: {
         width: 200,
@@ -369,7 +414,7 @@ const styling = StyleSheet.create({
     nameRadioStationLabel: {
         fontWeight: 700,
         fontSize: 24,
-        color: 'red',
+        color: 'white',
     },
     trackTitle: {
         marginLeft: 10,

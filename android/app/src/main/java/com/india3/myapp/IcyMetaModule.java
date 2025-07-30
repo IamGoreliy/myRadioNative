@@ -42,6 +42,7 @@ public class IcyMetaModule extends ReactContextBaseJavaModule {
         isStreaming = true;
 
         new Thread(() -> {
+            boolean promiseSent = false;
             try {
                 // --- НАЧАЛО ИЗМЕНЕНИЙ ---
                 URL currentUrl = new URL(streamUrl);
@@ -94,7 +95,7 @@ public class IcyMetaModule extends ReactContextBaseJavaModule {
                     throw new Exception("Invalid icy-metaint value: " + metaInt);
                 }
 
-                promise.resolve("Streaming started successfully.");
+//                 promise.resolve("Streaming started successfully.");
 
                 InputStream inputStream = connection.getInputStream();
                 // ... (остальная логика парсинга остается без изменений) ...
@@ -127,6 +128,10 @@ public class IcyMetaModule extends ReactContextBaseJavaModule {
 
                                 String metadataString = new String(metadataStream.toByteArray(), StandardCharsets.UTF_8).trim();
                                 String title = parseStreamTitle(metadataString);
+                                if (!promiseSent) {
+                                    promise.resolve(title);
+                                    promiseSent = true;
+                                }
                                 if (title != null && !title.isEmpty()) {
                                     sendEvent("onMetadataReceived", title);
                                 }
@@ -134,6 +139,9 @@ public class IcyMetaModule extends ReactContextBaseJavaModule {
                             bytesUntilMetadata = metaInt;
                         }
                     }
+                }
+                if (!promiseSent) {
+                    promise.resolve(null);
                 }
 
             } catch (Exception e) {
