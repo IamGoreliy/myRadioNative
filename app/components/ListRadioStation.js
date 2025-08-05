@@ -54,11 +54,12 @@ export const StationItem = memo(({handler, item, index, isSelect, starsIsSelect,
     )
 })
 
-const ListRadioStation = ({listStation, fnSelectedRadio, changeIndex, onScroll}) => {
+const ListRadioStation = ({listStation, fnSelectedRadio, changeIndex, onScroll, isScrollDisabled}) => {
     const [selectStationIndex, setSelectStationIndex] = useState(null);
     const [stateSaveRadio, setStateSaveRadio] = useUserDataContext();
     const [langData] = useDataLangContext();
     const [testText, setTestText] = useState('');
+
 
 
 
@@ -152,7 +153,8 @@ const styling = StyleSheet.create({
         marginHorizontal: '2%',
         paddingBottom: 54,
         marginTop: 120,
-
+        // height: '100%',
+        overflow: 'hidden   '
     },
     mainItem: {
         justifyContent: "center",

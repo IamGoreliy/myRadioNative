@@ -32,6 +32,15 @@
       "queries": [
         {
           "package": "com.shazam.android"
+        },
+        {
+          "package": "com.spotify.music"
+        },
+        {
+          "package": "com.apple.android.music"
+        },
+        {
+          "package": "com.google.android.youtube"
         }
       ]
     },

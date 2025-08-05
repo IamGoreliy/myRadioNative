@@ -11,6 +11,8 @@ import {ShazamButton} from "./shazamBtn/ShazamButton";
 import randomcolor from "randomcolor";
 import Animated, {useSharedValue, useAnimatedStyle, withTiming} from "react-native-reanimated";
 import {Audio, InterruptionModeAndroid} from 'expo-av';
+import {BtnOption} from "./BtnCopyNameTrack";
+
 
 const logoPlaceholder = require('../../assets/logoByGemini.webp');
 
@@ -75,7 +77,7 @@ const initialStateLangData = [
 
 
 
-const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => {
+const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOpenPlayer}) => {
     const [isPlay, setIsPlay] = useState(false);
     const [sound, setSound] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -89,6 +91,9 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
         next: randomcolor({luminosity: 'bright'})
     })
 
+    useEffect(() => {
+        isOpenPlayer();
+    }, [controlPanelExpand])
     // console.log('trackTitle', trackTitle)
 
     useEffect(() => {
@@ -262,15 +267,22 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
                         </View>
                     }
                     {controlPanelExpand &&
-                        <Text
+                        <View
                             style={[
-                                styling.trackTitle,
-                                controlPanelExpand && styling.trackTitleOpen,
+                                styling.wrapperTrackTitle,
+                                controlPanelExpand && styling.wrapperTrackTitleOpen
                             ]}
-                            // numberOfLines={1}
                         >
-                            {trackTitle ?? findLang(initialStateLangData, 'loadingTrack')}
-                        </Text>
+                            <Text
+                                style={[
+                                    styling.trackTitle,
+                                    controlPanelExpand && styling.trackTitleOpen,
+                                ]}
+                                // numberOfLines={1}
+                            >
+                                {trackTitle ?? findLang(initialStateLangData, 'loadingTrack')}
+                            </Text>
+                        </View>
                     }
                     {controlPanelExpand &&
                         <>
@@ -313,6 +325,8 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
                     >
                         <AntDesign name="stepforward" size={controlPanelExpand ? 44 : 24} color="white" />
                     </ButtonControl>
+                    {controlPanelExpand && <BtnOption nameTrack={trackTitle}/>}
+
                     {!controlPanelExpand &&
                         <ButtonControl
                             managementFN={handlerExpand}
@@ -333,12 +347,8 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave}) => 
                             styleLabel={styling.btnLabel}>
                                 <Foundation name="arrows-compress" size={24} color="white" />
                         </ButtonControl>
-                        <View style={styling.shazamButtonOnOpenPlayer}>
-                            <ShazamButton size={44}/>
-                <       /View>
                     </>
                 }
-
             </Animated.View>
         </View>
     )
@@ -416,30 +426,36 @@ const styling = StyleSheet.create({
         fontSize: 24,
         color: 'white',
     },
-    trackTitle: {
-        marginLeft: 10,
-        color: 'white',
+    wrapperTrackTitle: {
         width: 100,
+        marginLeft: 10,
+
     },
-    trackTitleOpen: {
-        display: "flex",
+    wrapperTrackTitleOpen: {
+        width: 300,
+        padding: 10,
         flexDirection: "row",
         flexWrap: "wrap",
         marginLeft: 0,
         marginTop: 20,
+        backgroundColor: 'rgb(49,100,49)',
+        borderRadius: 5
+    },
+    trackTitle: {
+        color: 'white',
+    },
+    trackTitleOpen: {
         fontWeight: 700,
-        fontSize: 20,
-        width: 300,
-        backgroundColor: 'red'
-
+        fontSize: 16,
     },
     btnWrapper: {
         flexDirection: 'row',
     },
     btnWrapperOpen: {
         position: "absolute",
+        width: '100%',
+        justifyContent: 'center',
         bottom: 20,
-
     },
     btn: (mr = false) => ({
         marginLeft: mr ? 25 : 0,

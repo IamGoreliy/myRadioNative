@@ -23,11 +23,16 @@ const Home = () => {
     const [radioWaveIndex, setRadioWaveIndex] = useState(null);
     const [userData] = useUserDataContext(); // контекст который загружает все настройки пользователя + сохраненные станции
     const [isFavorite, setIsFavorite] = useState(false);
+    const [isOpenPlayer, setIsOpenPlayer] = useState(false);
 
     //анимация
     const lastScrollY = useSharedValue(0);
     const headerTranslateY = useSharedValue(0);
     const isHeaderVisible = useSharedValue(1);
+
+
+    const toggleIsOpenPlayer = useCallback(() => setIsOpenPlayer(prevState => !prevState), []);
+
 
     useEffect(() => {
         fetchGetStation(0, variantArlLink(userData.searchCountry.code, userData.tag, userData.switcher))
@@ -144,6 +149,7 @@ const Home = () => {
                         fnSelectedRadio={selectedCategory}
                         changeIndex={radioWaveIndex}
                         onScroll={handlerScrollHideTitleComponent}
+                        isScrollDisabled={!isOpenPlayer}
                     />
                 </Animated.View>
                 <RadioPlayerNew
@@ -151,6 +157,7 @@ const Home = () => {
                     radioWave={stationListForRender[radioWaveIndex]}
                     handlerNextWave={nextRadioWave}
                     handlerPreWave={preRadioWave}
+                    isOpenPlayer={toggleIsOpenPlayer}
                 />
             </ImageBackground>
     );

@@ -12,3 +12,14 @@
 -keep class com.facebook.react.turbomodule.** { *; }
 
 # Add any project specific keep options here:
+
+# Правило для нашего IcyMetaModule, чтобы он не был удален или переименован
+-keep class com.india3.myapp.IcyMetaModule { *; }
+
+# Это более общее правило - хорошая практика на будущее.
+# Оно сохраняет все публичные классы в твоем пакете, у которых есть методы,
+# помеченные как @ReactMethod.
+-keep public class com.india3.myapp.* {
+    @com.facebook.react.bridge.ReactMethod
+    public <methods>;
+}
