@@ -21,7 +21,7 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
   }
 }
 
-rootProject.name = 'myRadio'
+rootProject.name = 'World-Waves'
 
 dependencyResolutionManagement {
   versionCatalogs {
