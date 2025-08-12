@@ -210,7 +210,6 @@ const styling = StyleSheet.create({
         // borderColor: 'red',
         justifyContent: 'center',
         alignItems: 'center',
-
     },
     btnOpenOptions: {
         width: 50,
@@ -249,7 +248,7 @@ const styling = StyleSheet.create({
     },
     wrapperNotification: {
         position: 'absolute',
-        top: 0,
+        top: -50,
         right: 0,
         padding: 7,
         backgroundColor: 'white',

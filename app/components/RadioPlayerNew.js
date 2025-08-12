@@ -12,6 +12,7 @@ import randomcolor from "randomcolor";
 import Animated, {useSharedValue, useAnimatedStyle, withTiming} from "react-native-reanimated";
 import {Audio, InterruptionModeAndroid} from 'expo-av';
 import {BtnOption} from "./BtnCopyNameTrack";
+import RecordingLiveButton from "./RecordingLiveButton";
 
 
 const logoPlaceholder = require('../../assets/logoByGemini.webp');
@@ -290,9 +291,10 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOp
                                 style={styling.goToHomeRadioBtn}
                                 onPress={handlerGoHome}
                             >
-                                <Text>
-                                    {findLang(initialStateLangData, 'btnGoHome')}
-                                </Text>
+                                {/*<Text>*/}
+                                {/*    {findLang(initialStateLangData,'btnGoHome')}*/}
+                                {/*</Text>*/}
+                                <AntDesign name="home" size={34} color="balack" />
                             </TouchableOpacity>
                         </>
                     }
@@ -304,6 +306,7 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOp
                         controlPanelExpand && styling.btnWrapperOpen,
                     ]}
                 >
+                    {controlPanelExpand && <RecordingLiveButton radioWave={radioWave}/>}
                     <ButtonControl
                         managementFN={handlerPreWave}
                         styleBtn={styling.btn()}
@@ -459,6 +462,7 @@ const styling = StyleSheet.create({
     },
     btn: (mr = false) => ({
         marginLeft: mr ? 25 : 0,
+
     }),
     btnExpand:{
         marginLeft: 25,
