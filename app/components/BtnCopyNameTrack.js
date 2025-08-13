@@ -9,6 +9,7 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import {createCustomSvg} from '../../utils/createCustomSvg'
 import Fontisto from '@expo/vector-icons/Fontisto';
 import {ShazamButton} from './shazamBtn/ShazamButton';
+import {testGetNameTrack} from "../../utils/fetch/testGetNameTrack";
 
 //все для спотифай
 const SpotifyPackageName = 'com.spotify.music';
@@ -58,8 +59,10 @@ const CopyNotification = ({notificationIsVisible}) => {
     )
 }
 
-const WindowAction = ({isOpenWindowAction, handlers = []}) => {
+const WindowAction = ({isOpenWindowAction, handlers = [], trackName}) => {
     const opacityValue = useSharedValue(0);
+
+    console.log('trackName', Boolean(trackName));
 
     useEffect(() => {
         if (isOpenWindowAction) {
@@ -75,6 +78,10 @@ const WindowAction = ({isOpenWindowAction, handlers = []}) => {
         }
     })
 
+    const handlerInterpretation = useCallback(() => {
+        alert('Ксожелению нет название песни. Воспользуйтеесь Shazam.');
+    }, []);
+
     return (
         <Animated.View
             style={[animationWindowAction, styling.actionBtnContainer]}
@@ -88,15 +95,15 @@ const WindowAction = ({isOpenWindowAction, handlers = []}) => {
                     <ShazamButton size={30} />
                 </View>
                 {[
-                    <FontAwesome name="chrome" size={30} color="black" />,
-                    <FontAwesome name="spotify" size={30} color="green" />,
-                    <Fontisto name="applemusic" size={30} color="red" />,
-                    <FontAwesome name="youtube-play" size={24} color="red" />,
-                    <FontAwesome5 name="copy" size={30} color="black" />
+                    <FontAwesome name="chrome" size={30} color={trackName ? "black" : "gray"} />,
+                    <FontAwesome name="spotify" size={30} color={trackName ? "green" : "gray"}/>,
+                    <Fontisto name="applemusic" size={30} color={trackName ? "red" : "gray"} />,
+                    <FontAwesome name="youtube-play" size={24} color={trackName ? "red" : "gray"} />,
+                    <FontAwesome5 name="copy" size={30} color={trackName ? "black" : "gray"} />
                 ].map((ele, index) => (
                     <TouchableOpacity
                         key={index}
-                        onPress={handlers[index]}
+                        onPress={trackName ? handlers[index] : handlerInterpretation}
                         activeOpacity={0.8}
                         style={[styling.actionBtn, {marginTop: 12}]}
                     >
@@ -181,17 +188,21 @@ export const BtnOption = ({nameTrack}) => {
                 <WindowAction
                     isOpenWindowAction={isOpenWindowAction}
                     handlers={[openBrowser, openSpotify, openApple, openYouTube, copying,]}
+                    trackName={nameTrack}
                 />
             </View>
-
         </View>
     )
 }
 
 const styling = StyleSheet.create({
     container: {
+        position: 'absolute',
+        right: 30,
         justifyContent: 'center',
         alignItems: 'center',
+        width: 44,
+
     },
     wrapperNameTrack: {
         width: 240,
@@ -203,17 +214,14 @@ const styling = StyleSheet.create({
       color: 'white',
     },
     wrapperActionBtn: {
-        position: 'absolute',
-        right: -70,
-        width: 55,
         // borderWidth: 1,
         // borderColor: 'red',
         justifyContent: 'center',
         alignItems: 'center',
     },
     btnOpenOptions: {
-        width: 50,
-        height: 50,
+        width: 44,
+        height: 44,
         backgroundColor: 'white',
         borderRadius: '50%',
         justifyContent: 'center',
@@ -223,7 +231,7 @@ const styling = StyleSheet.create({
         position: 'absolute',
         bottom: 55,
         right: 0,
-        // width: '100%',
+        width: 52,
         height: 175,
         backgroundColor: 'rgba(210,210,210,0.8)',
         zIndex: 2,

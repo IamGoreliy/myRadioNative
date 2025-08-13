@@ -92,25 +92,27 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOp
         next: randomcolor({luminosity: 'bright'})
     })
 
+
     useEffect(() => {
         isOpenPlayer();
     }, [controlPanelExpand])
     // console.log('trackTitle', trackTitle)
 
-    useEffect(() => {
-        const idChangeColorInterval = setInterval(() => {
-            setColors(prevState => ({
-                current: prevState.next,
-                next: randomcolor({luminosity: 'bright'}),
-            }))
-            startColor.value = 0;
-            startColor.value = withTiming(1, {duration: 2000});
-        }, 2000);
-
-        return () => {
-            clearInterval(idChangeColorInterval);
-        }
-    }, []);
+    // анимация для плеер-панели (меняет цвет границ каждые 2 мин) Отключил из за того что компонент плеер-панели перерендер каждые 2 мин (может вызвать не нужный перерендер и приложение может упасть/быть утечка памяти)
+    // useEffect(() => {
+    //     const idChangeColorInterval = setInterval(() => {
+    //         setColors(prevState => ({
+    //             current: prevState.next,
+    //             next: randomcolor({luminosity: 'bright'}),
+    //         }))
+    //         startColor.value = 0;
+    //         startColor.value = withTiming(1, {duration: 2000});
+    //     }, 2000);
+    //
+    //     return () => {
+    //         clearInterval(idChangeColorInterval);
+    //     }
+    // }, []);
 
     useEffect(() => {
         if (radioWave) {
@@ -240,7 +242,7 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOp
                 style={[
                     styling.controlPanel,
                     controlPanelExpand && styling.controlPanelIsOpen,
-                    AnimatedColorForControlPanel
+                    // AnimatedColorForControlPanel
                 ]}
             >
                 <View
@@ -306,7 +308,14 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOp
                         controlPanelExpand && styling.btnWrapperOpen,
                     ]}
                 >
-                    {controlPanelExpand && <RecordingLiveButton radioWave={radioWave}/>}
+
+                    {controlPanelExpand &&
+                        <RecordingLiveButton
+                            radioWave={radioWave}
+                            sx={styling.btmRecordLive}
+                        />
+                    }
+
                     <ButtonControl
                         managementFN={handlerPreWave}
                         styleBtn={styling.btn()}
@@ -328,7 +337,12 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOp
                     >
                         <AntDesign name="stepforward" size={controlPanelExpand ? 44 : 24} color="white" />
                     </ButtonControl>
-                    {controlPanelExpand && <BtnOption nameTrack={trackTitle}/>}
+
+                    {controlPanelExpand && <
+                        BtnOption
+                            nameTrack={trackTitle}
+                        />
+                    }
 
                     {!controlPanelExpand &&
                         <ButtonControl
@@ -380,10 +394,12 @@ const styling = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: 'center',
         // borderColor: '#FF4D00FF',
-        borderWidth: 2,
+        borderWidth: 3,
         transform: [{
             translateX: '-50%',
         }],
+        // borderColor: randomcolor({luminosity: 'bright'})
+        borderColor: "rgb(141, 192, 50)",
     },
     //панель с копками открыта
     controlPanelIsOpen: {
@@ -391,7 +407,6 @@ const styling = StyleSheet.create({
         height: 600,
         flexDirection: "column",
         justifyContent: 'unset',
-
     },
     //обертка информации про радиостанцию в обычном состоянии
     wrapperInfoRadioStation: {
@@ -408,6 +423,8 @@ const styling = StyleSheet.create({
         // height: 40,
         // resizeMode: 'contain',
         backgroundColor: 'white',
+        borderRadius: 10
+
     },
     logoRadio: {
         width: 70,
@@ -418,9 +435,10 @@ const styling = StyleSheet.create({
     logoRadioIsOpen: {
         width: 200,
         height: 200,
-        resizeMode: 'contain'
+        resizeMode: 'contain',
     },
     nameRadioStation: {
+        marginTop: 10,
         maxWidth: '100%',
         height: 100,
     },
@@ -488,6 +506,12 @@ const styling = StyleSheet.create({
         position: "absolute",
         bottom: 20,
         left: 10,
+    },
+    btmRecordLive: {
+        position: "absolute",
+        top: 0,
+        left: 30,
+
     }
 })
 

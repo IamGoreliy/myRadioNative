@@ -1,7 +1,10 @@
 package com.india3.worldwaves
 
+import android.content.ContentResolver
 import android.net.Uri
 import android.os.Environment
+import android.provider.DocumentsContract
+import android.util.Log
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
@@ -10,80 +13,114 @@ import org.videolan.libvlc.LibVLC
 import org.videolan.libvlc.Media
 import org.videolan.libvlc.MediaPlayer
 import java.io.File
-
-import android.util.Log // Для Log.d/e
-import android.media.MediaScannerConnection // Для MediaScannerConnection
-import android.media.MediaScannerConnection.OnScanCompletedListener // Для OnScanCompletedListener
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import android.media.MediaScannerConnection
 
 class LibVLCModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
- private var libVLC: LibVLC? = null
- private var mediaPlayer: MediaPlayer? = null
- private var lastKnownOutputFilePath: String? = null
+    private var libVLC: LibVLC? = null
+    private var mediaPlayer: MediaPlayer? = null
+    private var tempFilePath: String? = null
+    private var targetFolderUri: String? = null
 
-
-  override fun getName(): String {
-    return "VlcRecordingModule"
-  }
-
-@ReactMethod
-fun initialize(promise: Promise) {
-  promise.resolve("LibVLC работает")
-}
-
-  @ReactMethod
-  fun startRecording(streamUrl: String, fileName: String, promise: Promise) {
-    if (mediaPlayer !== null) {
-        promise.reject("RECORDING_IN_PROGRESS", "Запись уже идет.")
-        return
+    override fun getName(): String {
+        return "VlcRecordingModule" // Имя для JavaScript
     }
-    try{
-        val musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
-        if (!musicDir.exists()) {
-            musicDir.mkdirs()
+
+    @ReactMethod
+    fun initialize(promise: Promise) {
+        promise.resolve("LibVLC работает")
+    }
+
+    @ReactMethod
+    fun startRecording(streamUrl: String, fileName: String, folderUri: String?, promise: Promise) {
+        if (mediaPlayer != null) {
+            promise.reject("RECORDING_IN_PROGRESS", "Запись уже идет.")
+            return
         }
-        val outputFile = File(musicDir, fileName)
-        val outputFilePath = outputFile.absolutePath
-        lastKnownOutputFilePath = outputFilePath
+        try {
+            val tempDir = reactApplicationContext.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
+            if (tempDir == null) {
+                promise.reject("STORAGE_UNAVAILABLE", "Не удалось получить доступ к хранилищу.")
+                return
+            }
+            if (!tempDir.exists()) {
+                tempDir.mkdirs()
+            }
+            val tempFile = File(tempDir, fileName)
+            tempFilePath = tempFile.absolutePath
+            targetFolderUri = folderUri
 
+            val vlcOptions = arrayListOf("--verbose=2")
+            libVLC = LibVLC(reactApplicationContext, vlcOptions)
 
-        Log.d("VlcRecordingModule", "Попытка сохранения файла по пути: $outputFilePath")
+            val media = Media(libVLC, Uri.parse(streamUrl))
 
-        val options = ArrayList<String>()
-        // VLC options for streaming/recording
-        // This line specifies transcoding to mp3 and saving to a file.
-        // Be careful with raw muxer, it might not be suitable for all cases.
-        // You might want to use ":mux=mp3" or ":mux=ogg" if you want a proper container.
-        // For simple MP3, raw might be okay, but check VLC documentation for best practices.
-        val sout = ":sout=#transcode{acodec=mp3,ab=128}:std{access=file,mux=mp3,dst=$outputFilePath}"
-        options.add(sout)
+            // Главное — говорим VLC записывать в файл и не выводить звук
+            media.addOption(":noaudio")
+            media.addOption(":sout=#transcode{acodec=mp3,ab=128,channels=2}:standard{access=file,mux=mp3,dst=$tempFilePath}")
+            media.addOption(":no-sout-all")
+            media.addOption(":sout-keep")
 
-        libVLC = LibVLC(reactApplicationContext, options)
-        // Corrected: Use the instance of libVLC, not the class itself
-        val media = Media(libVLC, Uri.parse(streamUrl)) // <-- Исправлено здесь
-        mediaPlayer = MediaPlayer(libVLC)
-        mediaPlayer?.let {
-            it.media = media
+            mediaPlayer = MediaPlayer(libVLC)
+            mediaPlayer?.media = media
             media.release()
-            it.play()
-            promise.resolve("Запись успешно началась, сохранение в $outputFilePath")
+
+            mediaPlayer?.play()
+
+            promise.resolve("Запись успешно началась (тихий режим): $tempFilePath")
+        } catch (e: Exception) {
+            promise.reject("RECORDING_FAILED", e.message)
         }
-    } catch (e: Exception) {
-        promise.reject("RECORDING_FAILED", "Не удалось начать запись: ${e.message}")
     }
-  }
 
-  @ReactMethod
-  fun stopRecording(promise: Promise) {
-   mediaPlayer?.stop()
-   mediaPlayer?.release() // <-- Исправлена опечатка здесь: mediaPLayer -> mediaPlayer
-   libVLC?.release()
-   mediaPlayer = null
-   libVLC = null
+    @ReactMethod
+    fun stopRecording(promise: Promise) {
+        try {
+            mediaPlayer?.stop()
+            Thread.sleep(500) // ждём, чтобы VLC дописал буфер
+            mediaPlayer?.release()
+            libVLC?.release()
+            mediaPlayer = null
+            libVLC = null
 
-   if (lastKnownOutputFilePath !== null) {
-        Log.d("VlcRecordingModule", "Попытка сканирования файла по пути: $lastKnownOutputFilePath")
-   }
+            if (tempFilePath != null) {
+                val tempFile = File(tempFilePath)
+                if (tempFile.exists() && tempFile.length() > 0) {
+                    if (!targetFolderUri.isNullOrEmpty()) {
+                        val contentResolver = reactApplicationContext.contentResolver
+                        val treeUri = Uri.parse(targetFolderUri)
+                        val documentId = DocumentsContract.getTreeDocumentId(treeUri)
+                        val parentUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, documentId)
 
-   promise.resolve("Запись остановлена, ресурсы очищены.")
-  } // <-- Добавлена недостающая закрывающая скобка здесь
+                        val newFileUri = DocumentsContract.createDocument(
+                            contentResolver,
+                            parentUri,
+                            "audio/mpeg",
+                            tempFile.name
+                        )
+                        if (newFileUri != null) {
+                            contentResolver.openOutputStream(newFileUri)?.use { outputStream ->
+                                FileInputStream(tempFile).use { inputStream ->
+                                    inputStream.copyTo(outputStream)
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    promise.reject("FILE_EMPTY", "Файл пустой или не найден")
+                    return
+                }
+            }
+
+            promise.resolve("Запись остановлена")
+        } catch (e: Exception) {
+            promise.reject("STOP_RECORDING_FAILED", e.message)
+        } finally {
+            tempFilePath = null
+            targetFolderUri = null
+        }
+    }
+
+
 }
