@@ -3,6 +3,9 @@ package com.india3.worldwaves
 import android.os.Build
 import android.os.Bundle
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
@@ -17,6 +20,7 @@ class MainActivity : ReactActivity() {
     // This is required for expo-splash-screen.
     setTheme(R.style.AppTheme);
     super.onCreate(null)
+    createNotificationChannel()
   }
 
   /**
@@ -58,4 +62,18 @@ class MainActivity : ReactActivity() {
       // because it's doing more than [Activity.moveTaskToBack] in fact.
       super.invokeDefaultOnBackPressed()
   }
+
+  private fun createNotificationChannel() {
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+              val channel = NotificationChannel(
+                  "media_channel",
+                  "Media Playback",
+                  NotificationManager.IMPORTANCE_LOW
+              ).apply {
+                  description = "Channel for media playback notifications"
+              }
+              val notificationManager = getSystemService(NotificationManager::class.java)
+              notificationManager.createNotificationChannel(channel)
+          }
+      }
 }

@@ -13,6 +13,7 @@ import Animated, {useSharedValue, useAnimatedStyle, withTiming} from "react-nati
 import {Audio, InterruptionModeAndroid} from 'expo-av';
 import {BtnOption} from "./BtnCopyNameTrack";
 import RecordingLiveButton from "./RecordingLiveButton";
+import {NativeModules} from "react-native";
 
 
 const logoPlaceholder = require('../../assets/logoByGemini.webp');
@@ -90,7 +91,8 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOp
     const [colors, setColors] = useState({
         current: 'red',
         next: randomcolor({luminosity: 'bright'})
-    })
+    });
+    const {RadioModule} = NativeModules;
 
 
     useEffect(() => {
@@ -122,20 +124,29 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOp
     }, [radioWave]);
 
     useEffect(() => {
-        (async () => {
-            try {
-                await Audio.setAudioModeAsync({
-                    staysActiveInBackground: true,
-                    shouldDuckAndroid: true,
-                    interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
-                    playThroughEarpieceAndroid: false, // Убедимся, что играет через динамик, а не "ухо"
-                });
-            } catch (e) {
-                console.error('Failed to set audio mode', e);
-            }
-        })();
+        RadioModule.startService();
 
-    }, []);
+        return () => {
+            RadioModule.stopService();
+        }
+    }, [])
+
+    //тест новой фичи🦄🦄🦄🦄🦄🦄
+    // useEffect(() => {
+    //     (async () => {
+    //         try {
+    //             await Audio.setAudioModeAsync({
+    //                 staysActiveInBackground: true,
+    //                 shouldDuckAndroid: true,
+    //                 interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
+    //                 playThroughEarpieceAndroid: false, // Убедимся, что играет через динамик, а не "ухо"
+    //             });
+    //         } catch (e) {
+    //             console.error('Failed to set audio mode', e);
+    //         }
+    //     })();
+    //
+    // }, []);
 
     //создает из ссылки проигрыватель и как только волна будет загружена начнется воспроизведение
     useEffect(() => {
@@ -143,8 +154,19 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOp
             return;
         }
         if (isPlay) {
-            createSong(sound, setSound, waveUrl, setIsLoading, setIsPlay)
-                .catch(e => console.error('Ошибка воспроизведения аудио:', e));
+            // 🦄🦄🦄🦄🦄🦄тест новой фичи
+            // createSong(sound, setSound, waveUrl, setIsLoading, setIsPlay)
+            //     .catch(e => console.error('Ошибка воспроизведения аудио:', e));
+
+            // также новая фича 🦄🦄🦄🦄🦄🦄
+
+            setIsLoading(true);
+            RadioModule.startPlayback(waveUrl);
+
+            if (radioWave?.name) {
+                RadioModule.updateMetadata(radioWave.name, trackTitle ?? "live");
+            }
+            setIsLoading(false);
 
             (async () => {
                 const maxAttempts = 5;
@@ -153,10 +175,12 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOp
                     try {
                         console.log(`попытка № ${i + 1} запуск метаданных...`);
                         const res = await startListening(waveUrl, (newTitle) => {
+                            RadioModule.updateMetadata(radioWave.name, newTitle);
                             setTrackTitle(newTitle);
                         });
                         if (res.hasMetadata && res.nameTrack) {
                             console.log('[Плеер] Прослушивание метаданных успешно запущено, трек получен.');
+                            RadioModule.updateMetadata(radioWave.name, res.nameTrack);
                             setTrackTitle(res.nameTrack);
                             break;
                         }
@@ -179,10 +203,12 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOp
                 }
             })();
         } else {
-            if(sound) {
-                sound.unloadAsync();
-            }
-            setSound(null);
+            // 🦄🦄🦄🦄🦄новая фича
+            // if(sound) {
+            //     sound.unloadAsync();
+            // }
+            // setSound(null);
+            RadioModule.stopPlayback();
             stopListening();
             setTrackTitle('Название трека...');
         }
@@ -195,13 +221,18 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOp
 
     // сброс размонтирование соунда при размонтировании компонента ('при выходе из квартиры выключи свет')
     useEffect(() => {
+        // 🦄🦄🦄🦄 новая фича
+        //     return () => {
+        //         if (sound) {
+        //             sound.unloadAsync();
+        //         }
+        //     }
+        // }, [sound]);
 
-        return () => {
-            if (sound) {
-                sound.unloadAsync();
-            }
+        if (isPlay && radioWave?.name && trackTitle) {
+            RadioModule.updateMetadata(radioWave.name, trackTitle);
         }
-    }, [sound]);
+    }, [trackTitle]);
 
     const togglePlay = useCallback(() => {
         setIsPlay(prevState => !prevState);

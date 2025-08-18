@@ -18,7 +18,7 @@ import expo.modules.ReactNativeHostWrapper
 
 import com.india3.worldwaves.IcyMetaPackage;
 import com.india3.worldwaves.LibVLCPackage;
-
+import com.india3.worldwaves.RadioPackage;
 
 class MainApplication : Application(), ReactApplication {
 
@@ -31,6 +31,7 @@ class MainApplication : Application(), ReactApplication {
             // packages.add(new MyReactNativePackage());
             packages.add(IcyMetaPackage());
             packages.add(LibVLCPackage());
+            packages.add(RadioPackage());
             return packages
           }
 

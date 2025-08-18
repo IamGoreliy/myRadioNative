@@ -30,9 +30,9 @@ const config = {
     },
     edgeToEdgeEnabled: true,
     package: "com.india3.worldwaves",
+    foregroundService: true,
     permissions: [
-      "FOREGROUND_SERVICE",
-      "MANAGE_EXTERNAL_STORAGE"
+      "FOREGROUND_SERVICE"
     ],
     queries: [
       {
