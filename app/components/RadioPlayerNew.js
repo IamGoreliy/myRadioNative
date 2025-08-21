@@ -1,4 +1,4 @@
-import {StyleSheet, TouchableOpacity, View, Text, Linking, ScrollView} from "react-native";
+import {StyleSheet, TouchableOpacity, View, Text, Linking, ScrollView, DeviceEventEmitter} from "react-native";
 import {useState, useEffect, useCallback, } from "react";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Foundation from '@expo/vector-icons/Foundation';
@@ -12,7 +12,7 @@ import randomcolor from "randomcolor";
 import Animated, {useSharedValue, useAnimatedStyle, withTiming} from "react-native-reanimated";
 import {Audio, InterruptionModeAndroid} from 'expo-av';
 import {BtnOption} from "./BtnCopyNameTrack";
-import RecordingLiveButton from "./RecordingLiveButton";
+import RecordingLiveButton from "./RecordingLiveButton"
 import {NativeModules} from "react-native";
 
 
@@ -130,6 +130,31 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOp
             RadioModule.stopService();
         }
     }, [])
+
+    useEffect(() => {
+        const nextTrackListener = DeviceEventEmitter.addListener('onNextTrack', handlerNextWave);
+        const prevTrackListener = DeviceEventEmitter.addListener('onPrevTrack', handlerPreWave);
+
+        return () => {
+            nextTrackListener.remove();
+            prevTrackListener.remove();
+        };
+    }, [handlerNextWave, handlerPreWave]);
+
+    // Слушаем события изменения состояния плеера от нативного модуля
+    useEffect(() => {
+        const playbackStateListener = DeviceEventEmitter.addListener(
+            'onPlaybackStateChanged',
+            (event) => { // event будет { state: 'PLAYING' } или { state: 'PAUSED' }
+                console.log(`[UI] Native playback state changed to: ${event.state}`);
+                setIsPlay(event.state === 'PLAYING');
+            }
+        );
+
+        return () => {
+            playbackStateListener.remove();
+        };
+    }, []); // Пустой массив зависимостей, чтобы подписка создавалась один раз
 
     //тест новой фичи🦄🦄🦄🦄🦄🦄
     // useEffect(() => {

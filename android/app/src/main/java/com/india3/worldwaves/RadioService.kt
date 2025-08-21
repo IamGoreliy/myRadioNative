@@ -12,6 +12,7 @@ import android.app.NotificationManager
 import android.os.Build
 import androidx.media.session.MediaButtonReceiver
 import android.support.v4.media.session.MediaSessionCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import org.videolan.libvlc.LibVLC
@@ -37,6 +38,10 @@ class RadioService : Service() {
     companion object {
         const val NOTIFICATION_CHANNEL_ID = "media_playback_channel"
         private const val TAG = "RadioService"
+        const val ACTION_NEXT = "com.india3.worldwaves.ACTION_NEXT"
+        const val ACTION_PREVIOUS = "com.india3.worldwaves.ACTION_PREVIOUS"
+        const val ACTION_PLAYBACK_STATE_CHANGED = "com.india3.worldwaves.ACTION_PLAYBACK_STATE_CHANGED"
+        const val EXTRA_PLAYBACK_STATE = "com.india3.worldwaves.EXTRA_PLAYBACK_STATE"
     }
 
     override fun onCreate() {
@@ -99,6 +104,18 @@ class RadioService : Service() {
                     }
                 }
 
+                override fun onSkipToNext() {
+                    Log.d(TAG, "MediaSession: onSkipToNext called")
+                    val intent = Intent(ACTION_NEXT)
+                    LocalBroadcastManager.getInstance(this@RadioService).sendBroadcast(intent)
+                }
+
+                override fun onSkipToPrevious() {
+                    Log.d(TAG, "MediaSession: onSkipToPrevious called")
+                    val intent = Intent(ACTION_PREVIOUS)
+                    LocalBroadcastManager.getInstance(this@RadioService).sendBroadcast(intent)
+                }
+
                 override fun onStop() {
                     Log.d(TAG, "MediaSession: onStop called")
                     mainHandler.post {
@@ -122,7 +139,9 @@ class RadioService : Service() {
                         PlaybackStateCompat.ACTION_PLAY or
                                 PlaybackStateCompat.ACTION_PAUSE or
                                 PlaybackStateCompat.ACTION_PLAY_PAUSE or
-                                PlaybackStateCompat.ACTION_STOP
+                                PlaybackStateCompat.ACTION_STOP or
+                                PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+                                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
                     )
                     .build()
             )
@@ -170,15 +189,27 @@ class RadioService : Service() {
             )
         }
 
+        val prevAction = NotificationCompat.Action(
+            android.R.drawable.ic_media_previous, "Previous",
+            MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS)
+        )
+
+        val nextAction = NotificationCompat.Action(
+            android.R.drawable.ic_media_next, "Next",
+            MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_NEXT)
+        )
+
         val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_media_play)
             .setContentTitle(stationName)
             .setContentText(trackName)
+            .addAction(prevAction)
             .addAction(playPauseAction)
+            .addAction(nextAction)
             .setStyle(
                 MediaStyle()
                     .setMediaSession(mediaSession.sessionToken)
-                    .setShowActionsInCompactView(0)
+                    .setShowActionsInCompactView(0, 1, 2) // prev, play/pause, next
             )
             .setDeleteIntent(
                 MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_STOP)
@@ -218,10 +249,23 @@ class RadioService : Service() {
                         PlaybackStateCompat.ACTION_PLAY or
                                 PlaybackStateCompat.ACTION_PAUSE or
                                 PlaybackStateCompat.ACTION_PLAY_PAUSE or
-                                PlaybackStateCompat.ACTION_STOP
+                                PlaybackStateCompat.ACTION_STOP or
+                                PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+                                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
                     )
                     .setState(state, 0, 1f)
                 mediaSession.setPlaybackState(stateBuilder.build())
+
+                // ЭТО ГЛАВНОЕ ИЗМЕНЕНИЕ: Отправляем событие об изменении состояния
+                val intent = Intent(ACTION_PLAYBACK_STATE_CHANGED)
+                val stateString = when (state) {
+                    PlaybackStateCompat.STATE_PLAYING -> "PLAYING"
+                    PlaybackStateCompat.STATE_PAUSED -> "PAUSED"
+                    else -> "STOPPED"
+                }
+                intent.putExtra(EXTRA_PLAYBACK_STATE, stateString)
+                LocalBroadcastManager.getInstance(this@RadioService).sendBroadcast(intent)
+
                 updateNotification()
             } catch (e: Exception) {
                 Log.e(TAG, "Error setting playback state: ${e.message}")

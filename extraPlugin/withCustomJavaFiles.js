@@ -7,7 +7,14 @@ module.exports = withCustomJavaFiles = (config) => {
         'android',
         async (config) => {
             const projectRoot = config.modRequest.projectRoot;
-            const sourceFile = ['IcyMetaModule.java', 'IcyMetaPackage.java', 'LibVLCModule.kt', 'LibVLCPackage.kt'];
+            const sourceFile = [
+                'IcyMetaModule.java',
+                'IcyMetaPackage.java',
+                'LibVLCModule.kt',
+                'LibVLCPackage.kt',
+                'RadioModule.java',
+                'RadioPackage.java'
+            ];
 
             const sourceDir = path.join(projectRoot, 'extraPlugin', 'nativeCode');
             const targetDir = path.join(projectRoot, 'android', 'app', 'src', 'main', 'java', 'com', 'india3', 'worldwaves');

@@ -26,12 +26,14 @@ class MainApplication : Application(), ReactApplication {
         this,
         object : DefaultReactNativeHost(this) {
           override fun getPackages(): List<ReactPackage> {
-            val packages = PackageList(this).packages
+            // PackageList возвращает List (только для чтения).
+            // Мы должны создать из него новый, ИЗМЕНЯЕМЫЙ список с помощью .toMutableList()
+            val packages: MutableList<ReactPackage> = PackageList(this).packages.toMutableList()
             // Packages that cannot be autolinked yet can be added manually here, for example:
             // packages.add(new MyReactNativePackage());
-            packages.add(IcyMetaPackage());
-            packages.add(LibVLCPackage());
-            packages.add(RadioPackage());
+            packages.add(IcyMetaPackage())
+            packages.add(LibVLCPackage())
+            packages.add(RadioPackage())
             return packages
           }
 
