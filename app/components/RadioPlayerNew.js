@@ -2,15 +2,13 @@ import {StyleSheet, TouchableOpacity, View, Text, Linking, ScrollView, DeviceEve
 import {useState, useEffect, useCallback, } from "react";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Foundation from '@expo/vector-icons/Foundation';
-import {createSong} from "../../utils/controlPanelBtnNew";
 import ControlBtnAnimated from "./ControlBtnAnimated";
 import {Image} from "expo-image";
 import {startListening, stopListening} from '../../services/TrackMetadataService';
 import {useUserDataContext} from "../../utils/UserDataSaveContext";
 import {ShazamButton} from "./shazamBtn/ShazamButton";
 import randomcolor from "randomcolor";
-import Animated, {useSharedValue, useAnimatedStyle, withTiming} from "react-native-reanimated";
-import {Audio, InterruptionModeAndroid} from 'expo-av';
+import Animated, from "react-native-reanimated";
 import {BtnOption} from "./BtnCopyNameTrack";
 import RecordingLiveButton from "./RecordingLiveButton"
 import {NativeModules} from "react-native";
@@ -81,13 +79,11 @@ const initialStateLangData = [
 
 const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOpenPlayer}) => {
     const [isPlay, setIsPlay] = useState(false);
-    const [sound, setSound] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [waveUrl, setWaveUrl] = useState(null);
     const [controlPanelExpand, setControlPanelExpand] = useState(false);
     const [userData] = useUserDataContext();
     const [trackTitle, setTrackTitle] = useState(null);
-    const startColor = useSharedValue(0);
     const [colors, setColors] = useState({
         current: 'red',
         next: randomcolor({luminosity: 'bright'})
@@ -98,23 +94,7 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOp
     useEffect(() => {
         isOpenPlayer();
     }, [controlPanelExpand])
-    // console.log('trackTitle', trackTitle)
 
-    // анимация для плеер-панели (меняет цвет границ каждые 2 мин) Отключил из за того что компонент плеер-панели перерендер каждые 2 мин (может вызвать не нужный перерендер и приложение может упасть/быть утечка памяти)
-    // useEffect(() => {
-    //     const idChangeColorInterval = setInterval(() => {
-    //         setColors(prevState => ({
-    //             current: prevState.next,
-    //             next: randomcolor({luminosity: 'bright'}),
-    //         }))
-    //         startColor.value = 0;
-    //         startColor.value = withTiming(1, {duration: 2000});
-    //     }, 2000);
-    //
-    //     return () => {
-    //         clearInterval(idChangeColorInterval);
-    //     }
-    // }, []);
 
     useEffect(() => {
         if (radioWave) {
@@ -155,23 +135,6 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOp
             playbackStateListener.remove();
         };
     }, []); // Пустой массив зависимостей, чтобы подписка создавалась один раз
-
-    //тест новой фичи🦄🦄🦄🦄🦄🦄
-    // useEffect(() => {
-    //     (async () => {
-    //         try {
-    //             await Audio.setAudioModeAsync({
-    //                 staysActiveInBackground: true,
-    //                 shouldDuckAndroid: true,
-    //                 interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
-    //                 playThroughEarpieceAndroid: false, // Убедимся, что играет через динамик, а не "ухо"
-    //             });
-    //         } catch (e) {
-    //             console.error('Failed to set audio mode', e);
-    //         }
-    //     })();
-    //
-    // }, []);
 
     //создает из ссылки проигрыватель и как только волна будет загружена начнется воспроизведение
     useEffect(() => {
@@ -228,11 +191,6 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOp
                 }
             })();
         } else {
-            // 🦄🦄🦄🦄🦄новая фича
-            // if(sound) {
-            //     sound.unloadAsync();
-            // }
-            // setSound(null);
             RadioModule.stopPlayback();
             stopListening();
             setTrackTitle('Название трека...');
@@ -246,17 +204,11 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOp
 
     // сброс размонтирование соунда при размонтировании компонента ('при выходе из квартиры выключи свет')
     useEffect(() => {
-        // 🦄🦄🦄🦄 новая фича
-        //     return () => {
-        //         if (sound) {
-        //             sound.unloadAsync();
-        //         }
-        //     }
-        // }, [sound]);
 
         if (isPlay && radioWave?.name && trackTitle) {
             RadioModule.updateMetadata(radioWave.name, trackTitle);
         }
+
     }, [trackTitle]);
 
     const togglePlay = useCallback(() => {
@@ -285,20 +237,15 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOp
         return textObjForSection['appLang'][section];
     }, [userData.selectLanguage]);
 
-    const AnimatedColorForControlPanel = useAnimatedStyle(() => {
-        return {
-            borderColor: colors.current
-        }
-    })
+
 
 
     return (
         <View style={styling.container}>
-            <Animated.View
+            <View
                 style={[
                     styling.controlPanel,
-                    controlPanelExpand && styling.controlPanelIsOpen,
-                    // AnimatedColorForControlPanel
+                    controlPanelExpand && styling.controlPanelIsOpen
                 ]}
             >
                 <View
@@ -422,7 +369,7 @@ const RadioPlayerNew = ({radioWave = null, handlerNextWave, handlerPreWave, isOp
                         </ButtonControl>
                     </>
                 }
-            </Animated.View>
+            </View>
         </View>
     )
 }

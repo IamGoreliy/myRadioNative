@@ -30,6 +30,8 @@ class RadioService : Service() {
     private var stationName: String = "Internet Radio"
     private var trackName: String = "Live"
     private var currentUrl: String? = null
+    private var isForegroundStarted = false
+    private lateinit var placeholderNotification: NotificationCompat.Builder
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private lateinit var libVLC: LibVLC
@@ -47,6 +49,18 @@ class RadioService : Service() {
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "Service created")
+
+        val placeholderNotification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setContentTitle("Запуск радио…")
+            .setContentText("Подключение к станции")
+            .setSmallIcon(android.R.drawable.ic_media_play)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+
+
+        if (!isForegroundStarted) {
+            startForeground(1, placeholderNotification.build())
+            isForegroundStarted = true
+        }
 
         // Создание канала уведомлений
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -274,6 +288,7 @@ class RadioService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+
         Log.d(TAG, "onStartCommand: Received intent $intent")
         try {
             MediaButtonReceiver.handleIntent(mediaSession, intent)
