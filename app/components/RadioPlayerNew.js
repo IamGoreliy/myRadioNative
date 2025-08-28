@@ -8,7 +8,6 @@ import {startListening, stopListening} from '../../services/TrackMetadataService
 import {useUserDataContext} from "../../utils/UserDataSaveContext";
 import {ShazamButton} from "./shazamBtn/ShazamButton";
 import randomcolor from "randomcolor";
-import Animated, from "react-native-reanimated";
 import {BtnOption} from "./BtnCopyNameTrack";
 import RecordingLiveButton from "./RecordingLiveButton"
 import {NativeModules} from "react-native";

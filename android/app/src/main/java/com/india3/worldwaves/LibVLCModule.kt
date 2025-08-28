@@ -17,6 +17,8 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import android.media.MediaScannerConnection
 
+import android.content.Intent
+
 class LibVLCModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
     private var libVLC: LibVLC? = null
     private var mediaPlayer: MediaPlayer? = null
@@ -30,6 +32,19 @@ class LibVLCModule(reactContext: ReactApplicationContext) : ReactContextBaseJava
     @ReactMethod
     fun initialize(promise: Promise) {
         promise.resolve("LibVLC работает")
+    }
+
+    @ReactMethod
+    fun takePersistablePermissions(folderUri: String, promise: Promise) {
+        try{
+            val uri = Uri.parse(folderUri)
+            val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            reactApplicationContext.contentResolver.takePersistableUriPermission(uri, takeFlags)
+            promise.resolve("Разрешение на доступ к папке успшено получено")
+         } catch (e: Exception) {
+            Log.e("VlcRecordingModule", "Ошибка при получении разрешения на доступ к папке", e)
+            promise.reject("PERMISSION_ERROR", "Не удалось получить постоянный доступ к папке", e)
+        }
     }
 
     @ReactMethod

@@ -19,42 +19,46 @@ const RecordingLiveButton = ({radioWave, sx}) => {
     const selectFolder = useCallback(async () => {
         try {
             const result = await DocumentPicker.pickDirectory()
-            setSelectFolderUri(result.uri)
-            alert('путь к папке:' + ' ' + result.uri)
+            if (result && result.uri) {
+                await VlcRecordingModule.takePersistablePermissions(result.uri)
+                setSelectFolderUri(result.uri);
+                alert('Папка выбрана и доступ к ней сохранен');
+                return result.uri;
+            }
+
         }catch (e) {
             if (DocumentPicker.isCancel(e)) {
                 alert('выбор папки отменен')
             } else {
-                console.log(e.message);
+                console.log('Ошибка выбора папки или предоставление доступа', e.message);
             }
             return null;
         }
     }, [])
 
-    const requestStoragePermission = async () => {
-        if (Platform.Version >= 33) {
-            return true;
-        }
-        try {
-            const  granted = await PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-                {
-                    title: 'Permission to access storage',
-                    message: 'App needs access to your storage to save recordings.',
-                    buttonNeutral: 'Ask Me Later',
-                    buttonNegative: 'Cancel',
-                    buttonPositive: 'OK',
-                }
-            );
-            console.log('granted', granted);
-            return granted === PermissionsAndroid.RESULTS.GRANTED;
-        } catch (e) {
-            console.log(e.message);
-            return false;
-        }
-
-
-    }
+    // 🦄🦄🦄 старая проверка на получение доступа
+    // const requestStoragePermission = async () => {
+    //     if (Platform.Version >= 33) {
+    //         return true;
+    //     }
+    //     try {
+    //         const  granted = await PermissionsAndroid.request(
+    //             PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+    //             {
+    //                 title: 'Permission to access storage',
+    //                 message: 'App needs access to your storage to save recordings.',
+    //                 buttonNeutral: 'Ask Me Later',
+    //                 buttonNegative: 'Cancel',
+    //                 buttonPositive: 'OK',
+    //             }
+    //         );
+    //         console.log('granted', granted);
+    //         return granted === PermissionsAndroid.RESULTS.GRANTED;
+    //     } catch (e) {
+    //         console.log(e.message);
+    //         return false;
+    //     }
+    // }
 
 
     const handlerStartRecording = useCallback(async () => {
@@ -68,12 +72,12 @@ const RecordingLiveButton = ({radioWave, sx}) => {
             folderUri = await selectFolder();
             if (!folderUri) return;
         }
-
-        const hasPermission = await requestStoragePermission();
-        if (!hasPermission && Platform.Version < 33) {
-            alert('вы не предоставили разрещение на запись');
-            return;
-        }
+        // 🦄🦄🦄 старая проверка на разрешение (не актуальна)
+        // const hasPermission = await requestStoragePermission();
+        // if (!hasPermission && Platform.Version < 33) {
+        //     alert('вы не предоставили разрещение на запись');
+        //     return;
+        // }
         const stationName = radioWave['name'].trim().replace(/[^a-zA-Z0-9]/g, '_');
         const timesTamp = new Date().toISOString().replace(/:/g, '-').replace(/\..+/g, '');
         const fileName = `${stationName}_${timesTamp}.mp3`;
